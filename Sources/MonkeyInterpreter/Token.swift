@@ -11,39 +11,39 @@ enum Token: Equatable {
     elseKeyword, returnKeyword
 }
 
-extension Token: CustomStringConvertible {
-  var description: String {
-    switch self {
-    case .illegal(let s): "ILLEGAL(\(s))"
-    case .eof: "EOF"
-    case .ident(let s): "IDENT(\(s))"
-    case .int(let s): "INT(\(s))"
-    case .assign: "="
-    case .plus: "+"
-    case .minus: "-"
-    case .bang: "!"
-    case .asterisk: "*"
-    case .slash: "/"
-    case .lt: "<"
-    case .gt: ">"
-    case .eq: "=="
-    case .notEq: "!="
-    case .comma: ","
-    case .semicolon: ";"
-    case .lparen: "("
-    case .rparen: ")"
-    case .lbrace: "{"
-    case .rbrace: "}"
-    case .function: "fn"
-    case .letKeyword: "let"
-    case .trueKeyword: "true"
-    case .falseKeyword: "false"
-    case .ifKeyword: "if"
-    case .elseKeyword: "else"
-    case .returnKeyword: "return"
-    }
-  }
-}
+// extension Token: CustomStringConvertible {
+//   var description: String {
+//     switch self {
+//     case .illegal(let s): "ILLEGAL(\(s))"
+//     case .eof: "EOF"
+//     case .ident(let s): "IDENT(\(s))"
+//     case .int(let s): "INT(\(s))"
+//     case .assign: "="
+//     case .plus: "+"
+//     case .minus: "-"
+//     case .bang: "!"
+//     case .asterisk: "*"
+//     case .slash: "/"
+//     case .lt: "<"
+//     case .gt: ">"
+//     case .eq: "=="
+//     case .notEq: "!="
+//     case .comma: ","
+//     case .semicolon: ";"
+//     case .lparen: "("
+//     case .rparen: ")"
+//     case .lbrace: "{"
+//     case .rbrace: "}"
+//     case .function: "fn"
+//     case .letKeyword: "let"
+//     case .trueKeyword: "true"
+//     case .falseKeyword: "false"
+//     case .ifKeyword: "if"
+//     case .elseKeyword: "else"
+//     case .returnKeyword: "return"
+//     }
+//   }
+// }
 
 private let keywords: [String: Token] = [
   "fn": .function,
