@@ -41,7 +41,7 @@ struct Parser {
     case .returnKeyword:
       return parseReturnStatement()
     default:
-      return nil
+      return parseExpressionStatement()
     }
   }
 
@@ -60,6 +60,12 @@ struct Parser {
     guard let value = parseExpression(.lowest) else { return nil }
     if peekTokenIs(.semicolon) { nextToken() }
     return .`return`(value: value)
+  }
+
+  mutating func parseExpressionStatement() -> Statement? {
+    guard let value = parseExpression(.lowest) else { return nil }
+    if peekTokenIs(.semicolon) { nextToken() }
+    return .statement(value: value)
   }
 
   // MARK: Expressions
