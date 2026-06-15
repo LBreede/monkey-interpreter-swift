@@ -12,6 +12,7 @@ enum Expression: Equatable {
   indirect case infix(left: Expression, op: Token, right: Expression)
   indirect case `if`(
     condition: Expression, consequence: BlockStatement, alternative: BlockStatement?)
+  indirect case function(parameters: [String], body: BlockStatement)
 }
 
 struct Program: Equatable {
@@ -43,9 +44,12 @@ extension Expression: CustomStringConvertible {
     case .`if`(let condition, let consequence, let alternative):
       var s = "if \(condition) \(consequence)"
       if let alt = alternative {
-        s += "else \(alt)"
+        s += " else \(alt)"
       }
       return s
+    case .function(let parameters, let body):
+      let params = parameters.joined(separator: ", ")
+      return "fn(\(params)) \(body)"
     }
   }
 }
@@ -55,5 +59,5 @@ extension Program: CustomStringConvertible {
 }
 
 extension BlockStatement: CustomStringConvertible {
-  var description: String { statements.map(\.description).joined() }
+  var description: String { "{ \(statements.map(\.description).joined()) }" }
 }

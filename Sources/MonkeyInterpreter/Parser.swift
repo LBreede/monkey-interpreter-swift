@@ -89,6 +89,7 @@ struct Parser {
     case .trueKeyword, .falseKeyword: return .boolean(currTokenIs(.trueKeyword))
     case .lparen: return parseGroupedExpression()
     case .ifKeyword: return parseIfExpression()
+    case .function: return parseFunctionExpression()
     default:
       errors.append("no prefix parse function for \(currToken) found")
       return nil
@@ -150,6 +151,14 @@ struct Parser {
     return .`if`(condition: condition, consequence: consequence, alternative: alternative)
   }
 
+  mutating func parseFunctionExpression() -> Expression? {
+    guard expectPeek(.lparen) else { return nil }
+    guard let parameters = parseFunctionParameters() else { return nil }
+    guard expectPeek(.lbrace) else { return nil }
+    let body = parseBlockStatement()
+    return .function(parameters: parameters, body: body)
+  }
+
   mutating func parseBlockStatement() -> BlockStatement {
     var block = BlockStatement(statements: [])
 
@@ -162,6 +171,36 @@ struct Parser {
     }
 
     return block
+  }
+
+  mutating func parseFunctionParameters() -> [String]? {
+    var parameters = [String]()
+    if peekTokenIs(.rparen) {
+      nextToken()
+      return parameters
+    }
+
+    nextToken()
+
+    guard case .ident(let ident) = currToken else {
+      errors.append("expected function parameter to be identifier, got \(currToken)")
+      return nil
+    }
+    parameters.append(ident)
+
+    while peekTokenIs(.comma) {
+      nextToken()
+      nextToken()
+      guard case .ident(let ident) = currToken else {
+        errors.append("expected function parameter to be identifier, got \(currToken)")
+        return nil
+      }
+      parameters.append(ident)
+    }
+
+    guard expectPeek(.rparen) else { return nil }
+
+    return parameters
   }
 
   // MARK: Precedence

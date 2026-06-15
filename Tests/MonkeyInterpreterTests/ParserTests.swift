@@ -123,6 +123,33 @@ import Testing
   #expect(alternative?.statements.first == .statement(value: .identifier("y")))
 }
 
+@Test func functionLiteralParsing() throws {
+  guard case .function(let parameters, let body) = soleExpression("fn(x, y) { x + y; }") else {
+    Issue.record("expected function expression")
+    return
+  }
+  #expect(parameters == ["x", "y"])
+  #expect(body.statements.count == 1)
+  #expect(
+    body.statements.first
+      == .statement(value: .infix(left: .identifier("x"), op: .plus, right: .identifier("y"))))
+}
+
+@Test func functionParameterParsing() throws {
+  let cases = [
+    ("fn() {};", []),
+    ("fn(x) {};", ["x"]),
+    ("fn(x, y, z) {};", ["x", "y", "z"]),
+  ]
+  for (input, expected) in cases {
+    guard case .function(let parameters, _) = soleExpression(input) else {
+      Issue.record("expected function expression")
+      return
+    }
+    #expect(parameters == expected, "input: \(input)")
+  }
+}
+
 func parseProgram(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Program {
   var parser = Parser(lexer: Lexer(input: input))
   let program = parser.parseProgram()
