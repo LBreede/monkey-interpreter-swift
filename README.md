@@ -41,6 +41,29 @@ let fibonacci = fn(x) { if (x == 0) { 0 } else { if (x == 1) { return 1; } else 
 The extra parentheses show how the parser grouped expressions according to
 operator precedence.
 
+Another example, adapted from the Monkey website, shows function literals and
+calls. Comments and evaluation are not implemented yet, so this example omits
+the original comments and prints parsed AST strings instead of a result value.
+
+```monkey
+let newAdder = fn(a, b) {
+  fn(c) { a + b + c };
+};
+
+let adder = newAdder(1, 2);
+adder(8);
+```
+
+```text
+>> let newAdder = fn(a, b) { fn(c) { a + b + c }; };
+let newAdder = fn(a, b) { fn(c) { ((a + b) + c) } };
+>> let adder = newAdder(1, 2);
+let adder = newAdder(1, 2);
+>> adder(8);
+adder(8)
+>>
+```
+
 ## Print Tokens
 
 Pass `--tokens` to run the lexer directly and print tokens instead of parsed
