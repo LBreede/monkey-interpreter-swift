@@ -3,6 +3,20 @@ enum ReplMode {
   case statements
 }
 
+private let monkeyFace = #"""
+              __,__
+     .--.  .-"     "-.  .--.
+    / .. \/  .-. .-.  \/ .. \
+   | |  '|  /   Y   \  |'  | |
+   | \   \  \ 0 | 0 /  /   / |
+    \ '- ,\.-"""""""-./, -' /
+     ''-' /_   ^ ^   _\ '-''
+         |  \._   _./  |
+         \   \ '~' /   /
+          '._ '-=-' _.'
+             '-----'
+  """#
+
 func startRepl(mode: ReplMode = .statements) {
   let prompt = ">> "
   while true {
@@ -18,12 +32,19 @@ func startRepl(mode: ReplMode = .statements) {
       var parser = Parser(lexer: Lexer(input: input))
       let program = parser.parseProgram()
       guard parser.errors.isEmpty else {
-        for message in parser.errors {
-          print("\t" + message)
-        }
+        printParserErrors(parser.errors)
         continue
       }
       print(program)
     }
+  }
+}
+
+func printParserErrors(_ errors: [String]) {
+  print(monkeyFace)
+  print("Woops! We ran into some monkey business here!")
+  print(" parser errors:")
+  for msg in errors {
+    print("\t\(msg)")
   }
 }
