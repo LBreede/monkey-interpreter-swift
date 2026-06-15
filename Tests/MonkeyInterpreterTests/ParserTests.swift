@@ -134,7 +134,7 @@ import Testing
     Issue.record("expected function expression")
     return
   }
-  #expect(parameters == [.identifier("x"), .identifier("y")])
+  #expect(parameters == ["x", "y"])
   #expect(body.statements.count == 1)
   #expect(
     body.statements.first
@@ -142,10 +142,10 @@ import Testing
 }
 
 @Test func functionParameterParsing() throws {
-  let cases: [(String, [Expression])] = [
+  let cases: [(String, [String])] = [
     ("fn() {};", []),
-    ("fn(x) {};", [.identifier("x")]),
-    ("fn(x, y, z) {};", [.identifier("x"), .identifier("y"), .identifier("z")]),
+    ("fn(x) {};", ["x"]),
+    ("fn(x, y, z) {};", ["x", "y", "z"]),
   ]
   for (input, expected) in cases {
     guard case .function(let parameters, _) = soleExpression(input) else {

@@ -174,18 +174,18 @@ struct Parser {
     return .function(parameters: parameters, body: body)
   }
 
-  private mutating func parseFunctionParameters() -> [Expression]? {
+  private mutating func parseFunctionParameters() -> [String]? {
     parseDelimitedList(end: .rparen) { parser in
       parser.parseFunctionParameter()
     }
   }
 
-  private mutating func parseFunctionParameter() -> Expression? {
+  private mutating func parseFunctionParameter() -> String? {
     guard case .ident(let ident) = currToken else {
       errors.append("expected function parameter to be identifier, got \(currToken)")
       return nil
     }
-    return .identifier(ident)
+    return ident
   }
 
   private mutating func parseCallExpression(_ function: Expression) -> Expression? {
