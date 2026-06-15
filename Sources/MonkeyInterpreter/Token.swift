@@ -7,17 +7,17 @@ enum Token: Equatable {
   case lt, gt
   case eq, notEq
   case comma, semicolon, lparen, rparen, lbrace, rbrace
-  case function, letKeyword, trueKeyword, falseKeyword, ifKeyword,
+  case fnKeyword, letKeyword, trueKeyword, falseKeyword, ifKeyword,
     elseKeyword, returnKeyword
 }
 
 extension Token: CustomStringConvertible {
   var description: String {
     switch self {
-    case .illegal(let s): "ILLEGAL(\(s))"
+    case .illegal(let s): "illegal(\(s))"
     case .eof: "EOF"
-    case .ident(let s): "IDENT(\(s))"
-    case .int(let s): "INT(\(s))"
+    case .ident(let s): "ident(\(s))"
+    case .int(let s): "int(\(s))"
     case .assign: "="
     case .plus: "+"
     case .minus: "-"
@@ -34,7 +34,7 @@ extension Token: CustomStringConvertible {
     case .rparen: ")"
     case .lbrace: "{"
     case .rbrace: "}"
-    case .function: "fn"
+    case .fnKeyword: "fn"
     case .letKeyword: "let"
     case .trueKeyword: "true"
     case .falseKeyword: "false"
@@ -45,8 +45,42 @@ extension Token: CustomStringConvertible {
   }
 }
 
+extension Token: CustomDebugStringConvertible {
+  var debugDescription: String {
+    switch self {
+    case .illegal(let s): "illegal(\(String(reflecting: s)))"
+    case .eof: "eof"
+    case .ident(let s): "ident(\(String(reflecting: s)))"
+    case .int(let s): "int(\(String(reflecting: s)))"
+    case .assign: "assign"
+    case .plus: "plus"
+    case .minus: "minus"
+    case .bang: "bang"
+    case .asterisk: "asterisk"
+    case .slash: "slash"
+    case .lt: "lt"
+    case .gt: "gt"
+    case .eq: "eq"
+    case .notEq: "notEq"
+    case .comma: "comma"
+    case .semicolon: "semicolon"
+    case .lparen: "lparen"
+    case .rparen: "rparen"
+    case .lbrace: "lbrace"
+    case .rbrace: "rbrace"
+    case .fnKeyword: "fnKeyword"
+    case .letKeyword: "letKeyword"
+    case .trueKeyword: "trueKeyword"
+    case .falseKeyword: "falseKeyword"
+    case .ifKeyword: "ifKeyword"
+    case .elseKeyword: "elseKeyword"
+    case .returnKeyword: "returnKeyword"
+    }
+  }
+}
+
 private let keywords: [String: Token] = [
-  "fn": .function,
+  "fn": .fnKeyword,
   "let": .letKeyword,
   "true": .trueKeyword,
   "false": .falseKeyword,

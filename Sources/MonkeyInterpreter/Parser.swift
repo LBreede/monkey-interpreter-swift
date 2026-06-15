@@ -89,7 +89,7 @@ struct Parser {
     case .trueKeyword, .falseKeyword: return .boolean(currTokenIs(.trueKeyword))
     case .lparen: return parseGroupedExpression()
     case .ifKeyword: return parseIfExpression()
-    case .function: return parseFunctionExpression()
+    case .fnKeyword: return parseFunctionExpression()
     default:
       errors.append("no prefix parse function for \(currToken) found")
       return nil

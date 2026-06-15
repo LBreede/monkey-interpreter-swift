@@ -26,7 +26,7 @@ func startRepl(mode: ReplMode = .statements) {
     switch mode {
     case .tokens:
       for token in Lexer(input: input) {
-        print(token)
+        debugPrint(token)
       }
     case .statements:
       var parser = Parser(lexer: Lexer(input: input))
