@@ -12,15 +12,29 @@ debugging, not pretty-printing.
 swift run MonkeyInterpreter
 ```
 
-Example:
+Example Monkey source:
+
+```monkey
+let fibonacci = fn(x) {
+  if (x == 0) {
+    0
+  } else {
+    if (x == 1) {
+      return 1;
+    } else {
+      fibonacci(x - 1) + fibonacci(x - 2);
+    }
+  }
+};
+```
+
+The REPL currently reads one line at a time, so enter the program as one line:
 
 ```text
 Hello stranger! This is the Monkey programming language!
 Feel free to type in commands
->> let sumOfDoubles = fn(x, y) { let x = 2*x; let y = 2*y; let z = x + y; return z; };
-let sumOfDoubles = fn(x, y) { let x = (2 * x);let y = (2 * y);let z = (x + y);return z; };
->> add(1, 2 * 3, 4 + 5);
-add(1, (2 * 3), (4 + 5))
+>> let fibonacci = fn(x) { if (x == 0) { 0 } else { if (x == 1) { return 1; } else { fibonacci(x - 1) + fibonacci(x - 2); } } };
+let fibonacci = fn(x) { if (x == 0) { 0 } else { if (x == 1) { return 1; } else { (fibonacci((x - 1)) + fibonacci((x - 2))) } } };
 >>
 ```
 
@@ -41,23 +55,26 @@ Example:
 ```text
 Hello stranger! This is the Monkey programming language!
 Feel free to type in commands
->> let add = fn(x, y) { x + y; };
-let
-IDENT(add)
-=
-fn
-(
-IDENT(x)
-,
-IDENT(y)
-)
-{
-IDENT(x)
-+
-IDENT(y)
-;
-}
-;
+>> let fibonacci = fn(x) { if (x == 0) { 0 } };
+letKeyword
+ident("fibonacci")
+assign
+fnKeyword
+lparen
+ident("x")
+rparen
+lbrace
+ifKeyword
+lparen
+ident("x")
+eq
+int("0")
+rparen
+lbrace
+int("0")
+rbrace
+rbrace
+semicolon
 >>
 ```
 
