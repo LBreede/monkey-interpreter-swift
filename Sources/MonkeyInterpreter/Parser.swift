@@ -99,6 +99,7 @@ struct Parser {
   mutating func parseInfix(_ left: Expression) -> Expression? {
     switch currToken {
     case .plus, .minus, .slash, .asterisk, .eq, .notEq, .lt, .gt: return parseInfixExpression(left)
+    case .lparen: return parseCallExpression(left)
     default: return left
     }
   }
@@ -151,14 +152,6 @@ struct Parser {
     return .`if`(condition: condition, consequence: consequence, alternative: alternative)
   }
 
-  mutating func parseFunctionExpression() -> Expression? {
-    guard expectPeek(.lparen) else { return nil }
-    guard let parameters = parseFunctionParameters() else { return nil }
-    guard expectPeek(.lbrace) else { return nil }
-    let body = parseBlockStatement()
-    return .function(parameters: parameters, body: body)
-  }
-
   mutating func parseBlockStatement() -> BlockStatement {
     var block = BlockStatement(statements: [])
 
@@ -171,6 +164,14 @@ struct Parser {
     }
 
     return block
+  }
+
+  mutating func parseFunctionExpression() -> Expression? {
+    guard expectPeek(.lparen) else { return nil }
+    guard let parameters = parseFunctionParameters() else { return nil }
+    guard expectPeek(.lbrace) else { return nil }
+    let body = parseBlockStatement()
+    return .function(parameters: parameters, body: body)
   }
 
   mutating func parseFunctionParameters() -> [String]? {
@@ -203,6 +204,35 @@ struct Parser {
     return parameters
   }
 
+  mutating func parseCallExpression(_ function: Expression) -> Expression? {
+    guard let arguments = parseCallArguments() else { return nil }
+    return .call(function: function, arguments: arguments)
+  }
+
+  mutating func parseCallArguments() -> [Expression]? {
+    var args = [Expression]()
+
+    if peekTokenIs(.rparen) {
+      nextToken()
+      return args
+    }
+
+    nextToken()
+    guard let expr = parseExpression(.lowest) else { return nil }
+    args.append(expr)
+
+    while peekTokenIs(.comma) {
+      nextToken()
+      nextToken()
+      guard let expr = parseExpression(.lowest) else { return nil }
+      args.append(expr)
+    }
+
+    guard expectPeek(.rparen) else { return nil }
+
+    return args
+  }
+
   // MARK: Precedence
 
   func precedence(of token: Token) -> Precedence {
@@ -211,6 +241,7 @@ struct Parser {
     case .lt, .gt: .lessGreater
     case .plus, .minus: .sum
     case .slash, .asterisk: .product
+    case .lparen: .call
     default: .lowest
     }
   }

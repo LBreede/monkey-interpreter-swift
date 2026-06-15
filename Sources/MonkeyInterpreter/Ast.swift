@@ -13,6 +13,7 @@ enum Expression: Equatable {
   indirect case `if`(
     condition: Expression, consequence: BlockStatement, alternative: BlockStatement?)
   indirect case function(parameters: [String], body: BlockStatement)
+  indirect case call(function: Expression, arguments: [Expression])
 }
 
 struct Program: Equatable {
@@ -50,6 +51,9 @@ extension Expression: CustomStringConvertible {
     case .function(let parameters, let body):
       let params = parameters.joined(separator: ", ")
       return "fn(\(params)) \(body)"
+    case .call(let function, let arguments):
+      let args = arguments.map(\.description).joined(separator: ", ")
+      return "\(function)(\(args))"
     }
   }
 }

@@ -87,6 +87,11 @@ import Testing
     ("2 / (5 + 5)", "(2 / (5 + 5))"),
     ("-(5 + 5)", "(-(5 + 5))"),
     ("!(true == true)", "(!(true == true))"),
+    ("a + add(b * c) + d", "((a + add((b * c))) + d)"),
+    (
+      "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))", "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"
+    ),
+    ("add(a + b + c * d / f + g)", "add((((a + b) + ((c * d) / f)) + g))"),
   ]
   for (input, expected) in cases {
     #expect(parseProgram(input).description == expected, "input: \(input)")
@@ -148,6 +153,22 @@ import Testing
     }
     #expect(parameters == expected, "input: \(input)")
   }
+}
+
+@Test func callExpressionParsing() throws {
+  guard case .call(let function, let arguments) = soleExpression("add(1, 2 * 3, 4 + 5);") else {
+    Issue.record("expected call expression")
+    return
+  }
+  guard case .identifier(let name) = function else {
+    Issue.record("expected identifier expression")
+    return
+  }
+  #expect(name == "add")
+  #expect(arguments.count == 3)
+  #expect(arguments[0] == .integer(1))
+  #expect(arguments[1] == .infix(left: .integer(2), op: .asterisk, right: .integer(3)))
+  #expect(arguments[2] == .infix(left: .integer(4), op: .plus, right: .integer(5)))
 }
 
 func parseProgram(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Program {
