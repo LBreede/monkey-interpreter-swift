@@ -5,20 +5,20 @@ enum Precedence: Int, Comparable {
 }
 
 struct Parser {
-  var l: Lexer
+  var lexer: Lexer
   var currToken: Token
   var peekToken: Token
   var errors: [String] = []
 
   init(lexer: Lexer) {
-    l = lexer
-    currToken = l.nextToken()
-    peekToken = l.nextToken()
+    self.lexer = lexer
+    currToken = self.lexer.nextToken()
+    peekToken = self.lexer.nextToken()
   }
 
-  mutating func nextToken() {
+  private mutating func nextToken() {
     currToken = peekToken
-    peekToken = l.nextToken()
+    peekToken = lexer.nextToken()
   }
 
   mutating func parseProgram() -> Program {
@@ -34,7 +34,7 @@ struct Parser {
 
   // MARK: Statements
 
-  mutating func parseStatement() -> Statement? {
+  private mutating func parseStatement() -> Statement? {
     switch currToken {
     case .letKeyword:
       return parseLetStatement()
@@ -45,7 +45,7 @@ struct Parser {
     }
   }
 
-  mutating func parseLetStatement() -> Statement? {
+  private mutating func parseLetStatement() -> Statement? {
     guard case .ident(let name) = peekToken else { return nil }
     nextToken()
     guard expectPeek(.assign) else { return nil }
@@ -55,14 +55,14 @@ struct Parser {
     return .`let`(name: name, value: value)
   }
 
-  mutating func parseReturnStatement() -> Statement? {
+  private mutating func parseReturnStatement() -> Statement? {
     nextToken()
     guard let value = parseExpression(.lowest) else { return nil }
     if peekTokenIs(.semicolon) { nextToken() }
     return .`return`(value: value)
   }
 
-  mutating func parseExpressionStatement() -> Statement? {
+  private mutating func parseExpressionStatement() -> Statement? {
     guard let value = parseExpression(.lowest) else { return nil }
     if peekTokenIs(.semicolon) { nextToken() }
     return .statement(value: value)
@@ -70,7 +70,7 @@ struct Parser {
 
   // MARK: Expressions
 
-  mutating func parseExpression(_ precedence: Precedence) -> Expression? {
+  private mutating func parseExpression(_ precedence: Precedence) -> Expression? {
     guard var left = parsePrefix() else { return nil }
 
     while !peekTokenIs(.semicolon) && precedence < peekPrecedence() {
@@ -81,7 +81,7 @@ struct Parser {
     return left
   }
 
-  mutating func parsePrefix() -> Expression? {
+  private mutating func parsePrefix() -> Expression? {
     switch currToken {
     case .ident(let name): return .identifier(name)
     case .int(let literal): return parseIntegerLiteral(literal)
@@ -96,7 +96,7 @@ struct Parser {
     }
   }
 
-  mutating func parseInfix(_ left: Expression) -> Expression? {
+  private mutating func parseInfix(_ left: Expression) -> Expression? {
     switch currToken {
     case .plus, .minus, .slash, .asterisk, .eq, .notEq, .lt, .gt: return parseInfixExpression(left)
     case .lparen: return parseCallExpression(left)
@@ -104,7 +104,7 @@ struct Parser {
     }
   }
 
-  mutating func parseIntegerLiteral(_ literal: String) -> Expression? {
+  private mutating func parseIntegerLiteral(_ literal: String) -> Expression? {
     guard let value = Int(literal) else {
       errors.append("could not parse \(literal) as integer")
       return nil
@@ -112,14 +112,14 @@ struct Parser {
     return .integer(value)
   }
 
-  mutating func parsePrefixExpression() -> Expression? {
+  private mutating func parsePrefixExpression() -> Expression? {
     let op = currToken
     nextToken()
     guard let right = parseExpression(.prefix) else { return nil }
     return .prefix(op: op, right: right)
   }
 
-  mutating func parseInfixExpression(_ left: Expression) -> Expression? {
+  private mutating func parseInfixExpression(_ left: Expression) -> Expression? {
     let op = currToken
     let precedence = currPrecedence()
     nextToken()
@@ -127,14 +127,14 @@ struct Parser {
     return .infix(left: left, op: op, right: right)
   }
 
-  mutating func parseGroupedExpression() -> Expression? {
+  private mutating func parseGroupedExpression() -> Expression? {
     nextToken()
     let expression = parseExpression(.lowest)
     guard expectPeek(.rparen) else { return nil }
     return expression
   }
 
-  mutating func parseIfExpression() -> Expression? {
+  private mutating func parseIfExpression() -> Expression? {
     guard expectPeek(.lparen) else { return nil }
     nextToken()
     guard let condition = parseExpression(.lowest) else { return nil }
@@ -152,7 +152,7 @@ struct Parser {
     return .`if`(condition: condition, consequence: consequence, alternative: alternative)
   }
 
-  mutating func parseBlockStatement() -> BlockStatement {
+  private mutating func parseBlockStatement() -> BlockStatement {
     var block = BlockStatement(statements: [])
 
     nextToken()
@@ -166,7 +166,7 @@ struct Parser {
     return block
   }
 
-  mutating func parseFunctionExpression() -> Expression? {
+  private mutating func parseFunctionExpression() -> Expression? {
     guard expectPeek(.lparen) else { return nil }
     guard let parameters = parseFunctionParameters() else { return nil }
     guard expectPeek(.lbrace) else { return nil }
@@ -174,68 +174,58 @@ struct Parser {
     return .function(parameters: parameters, body: body)
   }
 
-  mutating func parseFunctionParameters() -> [String]? {
-    var parameters = [String]()
-    if peekTokenIs(.rparen) {
-      nextToken()
-      return parameters
+  private mutating func parseFunctionParameters() -> [Expression]? {
+    parseDelimitedList(end: .rparen) { parser in
+      parser.parseFunctionParameter()
     }
+  }
 
-    nextToken()
-
+  private mutating func parseFunctionParameter() -> Expression? {
     guard case .ident(let ident) = currToken else {
       errors.append("expected function parameter to be identifier, got \(currToken)")
       return nil
     }
-    parameters.append(ident)
-
-    while peekTokenIs(.comma) {
-      nextToken()
-      nextToken()
-      guard case .ident(let ident) = currToken else {
-        errors.append("expected function parameter to be identifier, got \(currToken)")
-        return nil
-      }
-      parameters.append(ident)
-    }
-
-    guard expectPeek(.rparen) else { return nil }
-
-    return parameters
+    return .identifier(ident)
   }
 
-  mutating func parseCallExpression(_ function: Expression) -> Expression? {
+  private mutating func parseCallExpression(_ function: Expression) -> Expression? {
     guard let arguments = parseCallArguments() else { return nil }
     return .call(function: function, arguments: arguments)
   }
 
-  mutating func parseCallArguments() -> [Expression]? {
-    var args = [Expression]()
+  private mutating func parseCallArguments() -> [Expression]? {
+    parseDelimitedList(end: .rparen) { parser in
+      parser.parseExpression(.lowest)
+    }
+  }
 
-    if peekTokenIs(.rparen) {
+  private mutating func parseDelimitedList<T>(
+    end: Token, parseElement: (inout Parser) -> T?
+  ) -> [T]? {
+    var elements = [T]()
+    if peekTokenIs(end) {
       nextToken()
-      return args
+      return elements
     }
 
     nextToken()
-    guard let expr = parseExpression(.lowest) else { return nil }
-    args.append(expr)
+    guard let first = parseElement(&self) else { return nil }
+    elements.append(first)
 
     while peekTokenIs(.comma) {
       nextToken()
       nextToken()
-      guard let expr = parseExpression(.lowest) else { return nil }
-      args.append(expr)
+      guard let element = parseElement(&self) else { return nil }
+      elements.append(element)
     }
 
-    guard expectPeek(.rparen) else { return nil }
-
-    return args
+    guard expectPeek(end) else { return nil }
+    return elements
   }
 
   // MARK: Precedence
 
-  func precedence(of token: Token) -> Precedence {
+  private func precedence(of token: Token) -> Precedence {
     switch token {
     case .eq, .notEq: .equals
     case .lt, .gt: .lessGreater
@@ -246,15 +236,15 @@ struct Parser {
     }
   }
 
-  func peekPrecedence() -> Precedence { precedence(of: peekToken) }
-  func currPrecedence() -> Precedence { precedence(of: currToken) }
+  private func peekPrecedence() -> Precedence { precedence(of: peekToken) }
+  private func currPrecedence() -> Precedence { precedence(of: currToken) }
 
   // MARK: Token helpers
 
-  func currTokenIs(_ token: Token) -> Bool { currToken == token }
-  func peekTokenIs(_ token: Token) -> Bool { peekToken == token }
+  private func currTokenIs(_ token: Token) -> Bool { currToken == token }
+  private func peekTokenIs(_ token: Token) -> Bool { peekToken == token }
 
-  mutating func expectPeek(_ token: Token) -> Bool {
+  private mutating func expectPeek(_ token: Token) -> Bool {
     if peekTokenIs(token) {
       nextToken()
       return true
@@ -264,7 +254,7 @@ struct Parser {
     }
   }
 
-  mutating func peekError(_ token: Token) {
+  private mutating func peekError(_ token: Token) {
     let msg = "expected next token to be \(token), got \(peekToken) instead"
     errors.append(msg)
   }

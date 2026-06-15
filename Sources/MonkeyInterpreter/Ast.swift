@@ -12,7 +12,7 @@ enum Expression: Equatable {
   indirect case infix(left: Expression, op: Token, right: Expression)
   indirect case `if`(
     condition: Expression, consequence: BlockStatement, alternative: BlockStatement?)
-  indirect case function(parameters: [String], body: BlockStatement)
+  indirect case function(parameters: [Expression], body: BlockStatement)
   indirect case call(function: Expression, arguments: [Expression])
 }
 
@@ -49,7 +49,7 @@ extension Expression: CustomStringConvertible {
       }
       return s
     case .function(let parameters, let body):
-      let params = parameters.joined(separator: ", ")
+      let params = parameters.map(\.description).joined(separator: ", ")
       return "fn(\(params)) \(body)"
     case .call(let function, let arguments):
       let args = arguments.map(\.description).joined(separator: ", ")

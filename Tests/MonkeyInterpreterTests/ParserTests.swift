@@ -89,7 +89,8 @@ import Testing
     ("!(true == true)", "(!(true == true))"),
     ("a + add(b * c) + d", "((a + add((b * c))) + d)"),
     (
-      "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))", "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"
+      "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+      "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"
     ),
     ("add(a + b + c * d / f + g)", "add((((a + b) + ((c * d) / f)) + g))"),
   ]
@@ -133,7 +134,7 @@ import Testing
     Issue.record("expected function expression")
     return
   }
-  #expect(parameters == ["x", "y"])
+  #expect(parameters == [.identifier("x"), .identifier("y")])
   #expect(body.statements.count == 1)
   #expect(
     body.statements.first
@@ -141,10 +142,10 @@ import Testing
 }
 
 @Test func functionParameterParsing() throws {
-  let cases = [
+  let cases: [(String, [Expression])] = [
     ("fn() {};", []),
-    ("fn(x) {};", ["x"]),
-    ("fn(x, y, z) {};", ["x", "y", "z"]),
+    ("fn(x) {};", [.identifier("x")]),
+    ("fn(x, y, z) {};", [.identifier("x"), .identifier("y"), .identifier("z")]),
   ]
   for (input, expected) in cases {
     guard case .function(let parameters, _) = soleExpression(input) else {
@@ -174,7 +175,9 @@ import Testing
 func parseProgram(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Program {
   var parser = Parser(lexer: Lexer(input: input))
   let program = parser.parseProgram()
-  checkParserErrors(parser, sourceLocation: sourceLocation)
+  if !checkParserErrors(parser, sourceLocation: sourceLocation) {
+    return Program(statements: [])
+  }
   return program
 }
 
@@ -188,10 +191,14 @@ func expectLetStatement(
   #expect(boundName == name, sourceLocation: sourceLocation)
 }
 
-func checkParserErrors(_ parser: Parser, sourceLocation: SourceLocation = #_sourceLocation) {
-  for message in parser.errors {
-    Issue.record("parser error: \(message)", sourceLocation: sourceLocation)
+func checkParserErrors(_ parser: Parser, sourceLocation: SourceLocation = #_sourceLocation) -> Bool {
+  guard parser.errors.isEmpty else {
+    for message in parser.errors {
+      Issue.record("parser error: \(message)", sourceLocation: sourceLocation)
+    }
+    return false
   }
+  return true
 }
 
 func soleExpression(_ input: String, sourceLocation: SourceLocation = #_sourceLocation)
