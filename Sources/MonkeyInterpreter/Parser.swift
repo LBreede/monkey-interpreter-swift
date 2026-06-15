@@ -88,6 +88,7 @@ struct Parser {
     case .bang, .minus: return parsePrefixExpression()
     case .trueKeyword, .falseKeyword: return .boolean(currTokenIs(.trueKeyword))
     case .lparen: return parseGroupedExpression()
+    case .ifKeyword: return parseIfExpression()
     default:
       errors.append("no prefix parse function for \(currToken) found")
       return nil
@@ -129,6 +130,38 @@ struct Parser {
     let expression = parseExpression(.lowest)
     guard expectPeek(.rparen) else { return nil }
     return expression
+  }
+
+  mutating func parseIfExpression() -> Expression? {
+    guard expectPeek(.lparen) else { return nil }
+    nextToken()
+    guard let condition = parseExpression(.lowest) else { return nil }
+    guard expectPeek(.rparen) else { return nil }
+    guard expectPeek(.lbrace) else { return nil }
+    let consequence = parseBlockStatement()
+
+    var alternative: BlockStatement?
+    if peekTokenIs(.elseKeyword) {
+      nextToken()
+      guard expectPeek(.lbrace) else { return nil }
+      alternative = parseBlockStatement()
+    }
+
+    return .`if`(condition: condition, consequence: consequence, alternative: alternative)
+  }
+
+  mutating func parseBlockStatement() -> BlockStatement {
+    var block = BlockStatement(statements: [])
+
+    nextToken()
+    while !currTokenIs(.rbrace) && !currTokenIs(.eof) {
+      if let statement = parseStatement() {
+        block.statements.append(statement)
+      }
+      nextToken()
+    }
+
+    return block
   }
 
   // MARK: Precedence

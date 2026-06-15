@@ -10,9 +10,15 @@ enum Expression: Equatable {
   case boolean(Bool)
   indirect case prefix(op: Token, right: Expression)
   indirect case infix(left: Expression, op: Token, right: Expression)
+  indirect case `if`(
+    condition: Expression, consequence: BlockStatement, alternative: BlockStatement?)
 }
 
 struct Program: Equatable {
+  var statements: [Statement]
+}
+
+struct BlockStatement: Equatable {
   var statements: [Statement]
 }
 
@@ -29,15 +35,25 @@ extension Statement: CustomStringConvertible {
 extension Expression: CustomStringConvertible {
   var description: String {
     switch self {
-    case .identifier(let name): name
-    case .integer(let value): String(value)
-    case .boolean(let value): String(value)
-    case .prefix(let op, let right): "(\(op)\(right))"
-    case .infix(let left, let op, let right): "(\(left) \(op) \(right))"
+    case .identifier(let name): return name
+    case .integer(let value): return String(value)
+    case .boolean(let value): return String(value)
+    case .prefix(let op, let right): return "(\(op)\(right))"
+    case .infix(let left, let op, let right): return "(\(left) \(op) \(right))"
+    case .`if`(let condition, let consequence, let alternative):
+      var s = "if \(condition) \(consequence)"
+      if let alt = alternative {
+        s += "else \(alt)"
+      }
+      return s
     }
   }
 }
 
 extension Program: CustomStringConvertible {
+  var description: String { statements.map(\.description).joined() }
+}
+
+extension BlockStatement: CustomStringConvertible {
   var description: String { statements.map(\.description).joined() }
 }

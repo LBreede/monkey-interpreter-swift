@@ -93,6 +93,36 @@ import Testing
   }
 }
 
+@Test func ifExpressions() throws {
+  guard
+    case .`if`(let condition, let consequence, let alternative) = soleExpression("if (x < y) { x }")
+  else {
+    Issue.record("expected if expression")
+    return
+  }
+
+  #expect(condition == .infix(left: .identifier("x"), op: .lt, right: .identifier("y")))
+  #expect(consequence.statements.count == 1)
+  #expect(consequence.statements.first == .statement(value: .identifier("x")))
+  #expect(alternative == nil)
+}
+
+@Test func ifElseExpressions() throws {
+  guard
+    case .`if`(let condition, let consequence, let alternative) = soleExpression(
+      "if (x < y) { x } else { y }")
+  else {
+    Issue.record("expected if-else expression")
+    return
+  }
+
+  #expect(condition == .infix(left: .identifier("x"), op: .lt, right: .identifier("y")))
+  #expect(consequence.statements.count == 1)
+  #expect(consequence.statements.first == .statement(value: .identifier("x")))
+  #expect(alternative?.statements.count == 1)
+  #expect(alternative?.statements.first == .statement(value: .identifier("y")))
+}
+
 func parseProgram(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Program {
   var parser = Parser(lexer: Lexer(input: input))
   let program = parser.parseProgram()
