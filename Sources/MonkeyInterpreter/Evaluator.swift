@@ -1,6 +1,6 @@
-var trueObject: Object { .boolean(true) }
-var falseObject: Object { .boolean(false) }
-var nullObject: Object { .null }
+private var trueObject: Object { .boolean(true) }
+private var falseObject: Object { .boolean(false) }
+private var nullObject: Object { .null }
 
 func eval(_ program: Program, _ environment: Environment) -> Object {
   var result = nullObject
@@ -74,15 +74,15 @@ func eval(_ expression: Expression, _ environment: Environment) -> Object {
   }
 }
 
-func evalIdentifier(_ name: String, _ environment: Environment) -> Object {
+private func evalIdentifier(_ name: String, _ environment: Environment) -> Object {
   environment.get(name: name) ?? .error(message: "identifier not found: \(name)")
 }
 
-func nativeBoolToBooleanObject(_ value: Bool) -> Object {
+private func nativeBoolToBooleanObject(_ value: Bool) -> Object {
   value ? trueObject : falseObject
 }
 
-func evalPrefixExpression(_ op: Token, _ right: Object) -> Object {
+private func evalPrefixExpression(_ op: Token, _ right: Object) -> Object {
   switch op {
   case .bang: return evalBangOperatorExpression(right)
   case .minus: return evalMinusPrefixOperatorExpression(right)
@@ -90,7 +90,7 @@ func evalPrefixExpression(_ op: Token, _ right: Object) -> Object {
   }
 }
 
-func evalBangOperatorExpression(_ right: Object) -> Object {
+private func evalBangOperatorExpression(_ right: Object) -> Object {
   switch right {
   case .boolean(true): return falseObject
   case .boolean(false): return trueObject
@@ -99,14 +99,14 @@ func evalBangOperatorExpression(_ right: Object) -> Object {
   }
 }
 
-func evalMinusPrefixOperatorExpression(_ right: Object) -> Object {
+private func evalMinusPrefixOperatorExpression(_ right: Object) -> Object {
   guard case .integer(let value) = right else {
     return .error(message: "unknown operator: -\(objectType(right))")
   }
   return .integer(value: -value)
 }
 
-func evalInfixExpression(_ op: Token, _ left: Object, _ right: Object) -> Object {
+private func evalInfixExpression(_ op: Token, _ left: Object, _ right: Object) -> Object {
   switch (op, left, right) {
   case (_, .integer(let left), .integer(let right)):
     return evalIntegerInfixExpression(op, left, right)
@@ -125,7 +125,7 @@ func evalInfixExpression(_ op: Token, _ left: Object, _ right: Object) -> Object
   }
 }
 
-func evalIntegerInfixExpression(_ op: Token, _ left: Int, _ right: Int) -> Object {
+private func evalIntegerInfixExpression(_ op: Token, _ left: Int, _ right: Int) -> Object {
   switch op {
   case .plus: return .integer(value: left + right)
   case .minus: return .integer(value: left - right)
@@ -139,7 +139,7 @@ func evalIntegerInfixExpression(_ op: Token, _ left: Int, _ right: Int) -> Objec
   }
 }
 
-func evalIfExpression(
+private func evalIfExpression(
   _ condition: Expression, _ consequence: BlockStatement, _ alternative: BlockStatement?,
   _ environment: Environment
 ) -> Object {
@@ -155,7 +155,7 @@ func evalIfExpression(
   }
 }
 
-func isTruthy(_ obj: Object) -> Bool {
+private func isTruthy(_ obj: Object) -> Bool {
   switch obj {
   case .null: return false
   case .boolean(let value): return value
@@ -163,7 +163,7 @@ func isTruthy(_ obj: Object) -> Bool {
   }
 }
 
-func objectType(_ object: Object) -> String {
+private func objectType(_ object: Object) -> String {
   switch object {
   case .integer: return "INTEGER"
   case .boolean: return "BOOLEAN"
@@ -174,11 +174,11 @@ func objectType(_ object: Object) -> String {
   }
 }
 
-func isError(_ object: Object) -> Bool {
+private func isError(_ object: Object) -> Bool {
   if case .error = object { true } else { false }
 }
 
-func evalExpressions(_ expressions: [Expression], _ environment: Environment) -> [Object] {
+private func evalExpressions(_ expressions: [Expression], _ environment: Environment) -> [Object] {
   var result = [Object]()
   for expression in expressions {
     let evaluated = eval(expression, environment)
@@ -188,7 +188,7 @@ func evalExpressions(_ expressions: [Expression], _ environment: Environment) ->
   return result
 }
 
-func applyFunction(_ function: Object, _ arguments: [Object]) -> Object {
+private func applyFunction(_ function: Object, _ arguments: [Object]) -> Object {
   guard case .function(let parameters, let body, let environment) = function else {
     return .error(message: "not a function: \(objectType(function))")
   }
@@ -206,7 +206,7 @@ func applyFunction(_ function: Object, _ arguments: [Object]) -> Object {
   return unwrapReturnValue(evaluated)
 }
 
-func extendFunctionEnvironment(
+private func extendFunctionEnvironment(
   parameters: [String], arguments: [Object], environment: Environment
 ) -> Environment {
   let extended = Environment.enclosed(outer: environment)
@@ -216,7 +216,7 @@ func extendFunctionEnvironment(
   return extended
 }
 
-func unwrapReturnValue(_ object: Object) -> Object {
+private func unwrapReturnValue(_ object: Object) -> Object {
   if case .returnValue(let value) = object {
     return value
   }

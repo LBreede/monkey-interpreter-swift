@@ -14,6 +14,15 @@ debug modes are also available.
 swift run MonkeyInterpreter
 ```
 
+Available flags:
+
+- `--tokens`: print lexer tokens instead of evaluating input.
+- `--ast`: print parsed AST strings instead of evaluating input.
+- `--debug`: print the evaluator environment after each input.
+
+If multiple modes are passed, `--tokens` takes precedence over `--ast`, and both
+take precedence over the default evaluator mode.
+
 Example:
 
 ```text

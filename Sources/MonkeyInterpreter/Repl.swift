@@ -4,6 +4,28 @@ enum ReplMode {
   case evaluator
 }
 
+struct ReplOptions {
+  var mode: ReplMode
+  var debug: Bool
+
+  init(mode: ReplMode = .evaluator, debug: Bool = false) {
+    self.mode = mode
+    self.debug = debug
+  }
+
+  init(arguments: [String]) {
+    mode =
+      if arguments.contains("--tokens") {
+        .tokens
+      } else if arguments.contains("--ast") {
+        .statements
+      } else {
+        .evaluator
+      }
+    debug = arguments.contains("--debug")
+  }
+}
+
 private let monkeyFace = #"""
               __,__
      .--.  .-"     "-.  .--.
@@ -18,7 +40,7 @@ private let monkeyFace = #"""
              '-----'
   """#
 
-func startRepl(mode: ReplMode = .evaluator, debug: Bool = false) {
+func startRepl(options: ReplOptions = ReplOptions()) {
   let prompt = ">> "
   let environment = Environment()
 
@@ -26,7 +48,7 @@ func startRepl(mode: ReplMode = .evaluator, debug: Bool = false) {
     print(prompt, terminator: "")
     guard let input = readLine() else { return }
 
-    switch mode {
+    switch options.mode {
     case .tokens:
       for token in Lexer(input: input) {
         debugPrint(token)
@@ -48,10 +70,10 @@ func startRepl(mode: ReplMode = .evaluator, debug: Bool = false) {
       }
       let evaluated = eval(program, environment)
       if case .null = evaluated {
-        printEnvironmentDebug(environment, enabled: debug)
+        printEnvironmentDebug(environment, enabled: options.debug)
       } else {
         print(evaluated)
-        printEnvironmentDebug(environment, enabled: debug)
+        printEnvironmentDebug(environment, enabled: options.debug)
       }
     }
   }
