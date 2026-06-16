@@ -3,7 +3,7 @@ import Testing
 @testable import MonkeyInterpreter
 
 @Test
-func singleCharacterTokens() {
+func lexerTokenizesSingleCharacterTokens() {
   expectTokens(
     input: "=+(){},;-!/*<>",
     [
@@ -15,7 +15,7 @@ func singleCharacterTokens() {
 }
 
 @Test
-func twoCharacterOperators() {
+func lexerTokenizesTwoCharacterOperators() {
   expectTokens(
     input: "10 == 10; 10 != 9;",
     [
@@ -27,7 +27,7 @@ func twoCharacterOperators() {
 }
 
 @Test
-func keywordsAndIdentifiers() {
+func lexerTokenizesKeywordsAndIdentifiers() {
   expectTokens(
     input: "fn let true false if else return foobar _name",
     [
@@ -39,7 +39,7 @@ func keywordsAndIdentifiers() {
 }
 
 @Test
-func skipsWhitespace() {
+func lexerSkipsWhitespace() {
   expectTokens(
     input: "let\tfive\n=\r\n5;",
     [.letKeyword, .ident("five"), .assign, .int("5"), .semicolon, .eof]
@@ -47,19 +47,19 @@ func skipsWhitespace() {
 }
 
 @Test
-func illegalCharacters() {
+func lexerTokenizesIllegalCharacters() {
   expectTokens(input: "@", [.illegal("@"), .eof])
 }
 
 @Test
-func sequenceConformanceOmitsEOF() {
+func lexerSequenceConformanceOmitsEOF() {
   let tokens = Array(Lexer(input: "let five = 5;"))
 
   #expect(tokens == [.letKeyword, .ident("five"), .assign, .int("5"), .semicolon])
 }
 
 @Test
-func nextTokenReturnsEOFRepeatedlyAfterInputEnds() {
+func lexerNextTokenReturnsEOFRepeatedlyAfterInputEnds() {
   var lexer = Lexer(input: "")
 
   #expect(lexer.nextToken() == .eof)
@@ -67,7 +67,7 @@ func nextTokenReturnsEOFRepeatedlyAfterInputEnds() {
 }
 
 @Test
-func monkeyBookLexerExample() {
+func lexerTokenizesMonkeyBookExample() {
   let input = """
     let five = 5;
     let ten = 10;

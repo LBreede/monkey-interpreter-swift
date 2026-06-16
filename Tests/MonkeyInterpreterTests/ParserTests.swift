@@ -2,7 +2,7 @@ import Testing
 
 @testable import MonkeyInterpreter
 
-@Test func letStatements() throws {
+@Test func parserParsesLetStatements() throws {
   let input = """
     let x = 5;
     let y = 10;
@@ -16,7 +16,7 @@ import Testing
   }
 }
 
-@Test func returnStatements() throws {
+@Test func parserParsesReturnStatements() throws {
   let input = """
     return 5;
     return 10;
@@ -32,27 +32,27 @@ import Testing
   }
 }
 
-@Test func identifierExpressions() {
+@Test func parserParsesIdentifierExpressions() {
   #expect(soleExpression("foobar;") == .identifier("foobar"))
 }
 
-@Test func integerLiteralExpressions() {
+@Test func parserParsesIntegerLiteralExpressions() {
   #expect(soleExpression("5;") == .integer(5))
 }
 
-@Test func booleanExpressions() {
+@Test func parserParsesBooleanExpressions() {
   #expect(soleExpression("true;") == .boolean(true))
   #expect(soleExpression("false;") == .boolean(false))
 }
 
-@Test func prefixExpressions() {
+@Test func parserParsesPrefixExpressions() {
   #expect(soleExpression("!5;") == .prefix(op: .bang, right: .integer(5)))
   #expect(soleExpression("-15;") == .prefix(op: .minus, right: .integer(15)))
   #expect(soleExpression("!true;") == .prefix(op: .bang, right: .boolean(true)))
   #expect(soleExpression("!false;") == .prefix(op: .bang, right: .boolean(false)))
 }
 
-@Test func infixExpressions() {
+@Test func parserParsesInfixExpressions() {
   let operators: [(String, Token)] = [
     ("+", .plus), ("-", .minus), ("*", .asterisk), ("/", .slash),
     (">", .gt), ("<", .lt), ("==", .eq), ("!=", .notEq),
@@ -64,7 +64,7 @@ import Testing
   }
 }
 
-@Test func operatorPrecedenceParsing() {
+@Test func parserPreservesOperatorPrecedence() {
   let cases = [
     ("-a * b", "((-a) * b)"),
     ("!-a", "(!(-a))"),
@@ -99,7 +99,7 @@ import Testing
   }
 }
 
-@Test func ifExpressions() throws {
+@Test func parserParsesIfExpressions() throws {
   guard
     case .ifExpression(let condition, let consequence, let alternative) = soleExpression(
       "if (x < y) { x }")
@@ -114,7 +114,7 @@ import Testing
   #expect(alternative == nil)
 }
 
-@Test func ifElseParsing() throws {
+@Test func parserParsesIfElseExpressions() throws {
   guard
     case .ifExpression(let condition, let consequence, let alternative) = soleExpression(
       "if (x < y) { x } else { y }")
@@ -130,7 +130,7 @@ import Testing
   #expect(alternative?.statements.first == .expression(value: .identifier("y")))
 }
 
-@Test func functionLiteralParsing() throws {
+@Test func parserParsesFunctionLiterals() throws {
   guard case .function(let parameters, let body) = soleExpression("fn(x, y) { x + y; }") else {
     Issue.record("expected function expression")
     return
@@ -142,7 +142,7 @@ import Testing
       == .expression(value: .infix(left: .identifier("x"), op: .plus, right: .identifier("y"))))
 }
 
-@Test func functionParameterParsing() throws {
+@Test func parserParsesFunctionParameters() throws {
   let cases: [(String, [String])] = [
     ("fn() {};", []),
     ("fn(x) {};", ["x"]),
@@ -157,7 +157,7 @@ import Testing
   }
 }
 
-@Test func callExpressionParsing() throws {
+@Test func parserParsesCallExpressions() throws {
   guard case .call(let function, let arguments) = soleExpression("add(1, 2 * 3, 4 + 5);") else {
     Issue.record("expected call expression")
     return

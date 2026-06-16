@@ -2,7 +2,7 @@ import Testing
 
 @testable import MonkeyInterpreter
 
-@Test func evalIntegerExpression() {
+@Test func evaluatorEvaluatesIntegerExpressions() {
   let tests = [
     ("5", 5), ("10", 10), ("-5", -5), ("-10", -10), ("5 + 5 + 5 + 5 - 10", 10),
     ("2 * 2 * 2 * 2 * 2", 32), ("-50 + 100 + -50", 0), ("5 * 2 + 10", 20), ("5 + 2 * 10", 25),
@@ -16,7 +16,7 @@ import Testing
   }
 }
 
-@Test func evalBooleanExpression() {
+@Test func evaluatorEvaluatesBooleanExpressions() {
   let tests = [
     ("true", true),
     ("false", false),
@@ -44,12 +44,12 @@ import Testing
   }
 }
 
-@Test func evalReturnsLastStatement() {
+@Test func evaluatorReturnsLastStatement() {
   #expect(testIntegerObject(testEval("5; 10;"), 10))
   #expect(testBooleanObject(testEval("true; false;"), false))
 }
 
-@Test func bangOperator() {
+@Test func evaluatorEvaluatesBangOperator() {
   let tests = [
     ("!true", false), ("!false", true), ("!5", false), ("!!true", true), ("!!false", false),
     ("!!5", true),
@@ -61,7 +61,7 @@ import Testing
   }
 }
 
-@Test func evalIfElseExpressions() {
+@Test func evaluatorEvaluatesIfElseExpressions() {
   let tests = [
     ("if (true) { 10 }", 10),
     ("if (false) { 10 }", nil),
@@ -81,7 +81,7 @@ import Testing
   }
 }
 
-@Test func evalReturnStatements() {
+@Test func evaluatorEvaluatesReturnStatements() {
   let tests = [
     ("return 10;", 10),
     ("return 10; 9;", 10),
@@ -107,7 +107,7 @@ import Testing
   }
 }
 
-@Test func errorHandling() {
+@Test func evaluatorPropagatesErrors() {
   let tests = [
     ("5 + true;", "type mismatch: INTEGER + BOOLEAN"),
     ("5 + true; 5;", "type mismatch: INTEGER + BOOLEAN"),
@@ -142,7 +142,7 @@ import Testing
   }
 }
 
-@Test func evalLetStatements() {
+@Test func evaluatorEvaluatesLetStatements() {
   let tests = [
     ("let a = 5; a;", 5),
     ("let a = 5 * 5; a;", 25),
@@ -154,7 +154,7 @@ import Testing
   }
 }
 
-@Test func functionObject() {
+@Test func evaluatorEvaluatesFunctionObjects() {
   let input = "fn(x) { x + 2; };"
 
   let evaluated = testEval(input)
@@ -184,7 +184,7 @@ import Testing
   }
 }
 
-@Test func functionApplication() {
+@Test func evaluatorAppliesFunctions() {
   let tests = [
     ("let identity = fn(x) { x; }; identity(5);", 5),
     ("let identity = fn(x) { return x; }; identity(5);", 5),
@@ -198,7 +198,7 @@ import Testing
   }
 }
 
-@Test func closures() {
+@Test func evaluatorEvaluatesClosures() {
   let input = """
     let newAdder = fn(x) {
       fn(y) { x + y };

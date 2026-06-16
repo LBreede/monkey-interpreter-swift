@@ -2,7 +2,7 @@ import Testing
 
 @testable import MonkeyInterpreter
 
-@Test func enclosedEnvironmentFallsBackToOuterScope() {
+@Test func environmentFallsBackToOuterScope() {
   let outer = Environment()
   outer.set(name: "a", value: .integer(value: 1))
 
@@ -13,7 +13,7 @@ import Testing
   #expect(testIntegerObject(enclosed.get(name: "b"), 2))
 }
 
-@Test func enclosedEnvironmentCanShadowOuterScope() {
+@Test func environmentCanShadowOuterScope() {
   let outer = Environment()
   outer.set(name: "a", value: .integer(value: 1))
 
