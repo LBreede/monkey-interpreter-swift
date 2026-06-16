@@ -3,9 +3,9 @@
 A Swift implementation of the Monkey language from *Writing an Interpreter in Go*.
 
 This project currently covers lexing, parsing, and the beginning of evaluation.
-The default REPL evaluates integer literals, boolean literals, prefix
-expressions, and multi-statement input. Parser and lexer debug modes are also
-available.
+The default REPL evaluates integers, booleans, prefix and infix expressions,
+conditionals, return statements, and multi-statement input. Parser and lexer
+debug modes are also available.
 
 ## Run the REPL
 
@@ -32,6 +32,16 @@ true
 false
 >> !!5;
 true
+>> 5 + 5 * 2;
+15
+>> 1 < 2;
+true
+>> if (1 < 2) { 10 } else { 20 };
+10
+>> if (false) { return 10; } 20;
+20
+>> if (false) { 10 } else { return 20; } 30;
+20
 >> 5; 10;
 10
 >>
