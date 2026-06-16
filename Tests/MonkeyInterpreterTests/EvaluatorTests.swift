@@ -198,6 +198,19 @@ import Testing
   }
 }
 
+@Test func closures() {
+  let input = """
+    let newAdder = fn(x) {
+      fn(y) { x + y };
+    };
+
+    let addTwo = newAdder(2);
+    addTwo(2);
+    """
+
+  #expect(testIntegerObject(testEval(input), 4))
+}
+
 func testEval(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Object {
   var parser = Parser(lexer: Lexer(input: input))
   let program = parser.parseProgram()
