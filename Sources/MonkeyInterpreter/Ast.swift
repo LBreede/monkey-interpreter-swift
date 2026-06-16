@@ -1,7 +1,7 @@
 indirect enum Statement: Equatable {
   case `let`(name: String, value: Expression)
-  case `return`(value: Expression)
-  case expression(value: Expression)
+  case `return`(Expression)
+  case expression(Expression)
 }
 
 enum Expression: Equatable {

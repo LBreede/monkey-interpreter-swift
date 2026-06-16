@@ -109,11 +109,11 @@ import Testing
 
   #expect(condition == .infix(left: .identifier("x"), op: .lt, right: .identifier("y")))
   #expect(consequence.statements.count == 1)
-  #expect(consequence.statements.first == .expression(value: .identifier("x")))
+  #expect(consequence.statements.first == .expression(.identifier("x")))
   #expect(alternative == nil)
 }
 
-@Test func ifElseExpressions() throws {
+@Test func ifElseParsing() throws {
   guard
     case .`if`(let condition, let consequence, let alternative) = soleExpression(
       "if (x < y) { x } else { y }")
@@ -124,9 +124,9 @@ import Testing
 
   #expect(condition == .infix(left: .identifier("x"), op: .lt, right: .identifier("y")))
   #expect(consequence.statements.count == 1)
-  #expect(consequence.statements.first == .expression(value: .identifier("x")))
+  #expect(consequence.statements.first == .expression(.identifier("x")))
   #expect(alternative?.statements.count == 1)
-  #expect(alternative?.statements.first == .expression(value: .identifier("y")))
+  #expect(alternative?.statements.first == .expression(.identifier("y")))
 }
 
 @Test func functionLiteralParsing() throws {
@@ -138,7 +138,7 @@ import Testing
   #expect(body.statements.count == 1)
   #expect(
     body.statements.first
-      == .expression(value: .infix(left: .identifier("x"), op: .plus, right: .identifier("y"))))
+      == .expression(.infix(left: .identifier("x"), op: .plus, right: .identifier("y"))))
 }
 
 @Test func functionParameterParsing() throws {

@@ -3,14 +3,31 @@ let falseObject: Object = .boolean(false)
 let nullObject: Object = .null
 
 func eval(_ program: Program) -> Object {
-  return evalStatements(program.statements)
+  var result = nullObject
+  for statement in program.statements {
+    result = eval(statement)
+    if case .`return`(let value) = result {
+      return value
+    }
+  }
+  return result
 }
 
-func eval(_ block: BlockStatement) -> Object { return nullObject }
+func eval(_ block: BlockStatement) -> Object {
+  var result = nullObject
+  for statement in block.statements {
+    result = eval(statement)
+    if case .`return`(_) = result {
+      return result
+    }
+  }
+  return result
+}
 
 func eval(_ statement: Statement) -> Object {
   switch statement {
-  case .expression(let expression): return eval(expression)
+  case .expression(let value): return eval(value)
+  case .`return`(let value): return .`return`(eval(value))
   default: return nullObject
   }
 }
@@ -21,18 +38,10 @@ func eval(_ expression: Expression) -> Object {
   case .boolean(let value): return nativeBoolToBooleanObject(value)
   case .prefix(let op, let right): return evalPrefixExpression(op, eval(right))
   case .infix(let left, let op, let right): return evalInfixExpression(op, eval(left), eval(right))
+  case .`if`(let condition, let consequence, let alternative):
+    return evalIfExpression(condition, consequence, alternative)
   default: return nullObject
   }
-}
-
-func evalStatements(_ statements: [Statement]) -> Object {
-  var result = nullObject
-
-  for statement in statements {
-    result = eval(statement)
-  }
-
-  return result
 }
 
 func nativeBoolToBooleanObject(_ value: Bool) -> Object {
@@ -61,12 +70,12 @@ func evalMinusPrefixOperatorExpression(_ right: Object) -> Object {
   return .integer(-value)
 }
 
-func evalInfixExpression(_ op: Token, _ leftObject: Object, _ rightObject: Object) -> Object {
-  switch (op, leftObject, rightObject) {
+func evalInfixExpression(_ op: Token, _ left: Object, _ right: Object) -> Object {
+  switch (op, left, right) {
   case (_, .integer(let left), .integer(let right)):
     return evalIntegerInfixExpression(op, left, right)
-  case (.eq, _, _): return nativeBoolToBooleanObject(leftObject == rightObject)
-  case (.notEq, _, _): return nativeBoolToBooleanObject(leftObject != rightObject)
+  case (.eq, _, _): return nativeBoolToBooleanObject(left == right)
+  case (.notEq, _, _): return nativeBoolToBooleanObject(left != right)
   default: return nullObject
   }
 }
@@ -82,5 +91,28 @@ func evalIntegerInfixExpression(_ op: Token, _ left: Int, _ right: Int) -> Objec
   case .eq: return nativeBoolToBooleanObject(left == right)
   case .notEq: return nativeBoolToBooleanObject(left != right)
   default: return nullObject
+  }
+}
+
+func evalIfExpression(
+  _ condition: Expression, _ consequence: BlockStatement, _ alternative: BlockStatement?
+) -> Object {
+  let condition = eval(condition)
+
+  if isTruthy(condition) {
+    return eval(consequence)
+  } else if let alternative {
+    return eval(alternative)
+  } else {
+    return nullObject
+  }
+}
+
+func isTruthy(_ obj: Object) -> Bool {
+  switch obj {
+  case nullObject: return false
+  case trueObject: return true
+  case falseObject: return false
+  default: return true
   }
 }

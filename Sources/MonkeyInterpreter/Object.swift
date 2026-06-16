@@ -1,7 +1,8 @@
-enum Object: Equatable {
+enum Object: Equatable, Sendable {
   case integer(Int)
   case boolean(Bool)
   case null
+  indirect case `return`(Object)
 }
 
 extension Object: CustomStringConvertible {
@@ -10,6 +11,7 @@ extension Object: CustomStringConvertible {
     case .integer(let value): "\(value)"
     case .boolean(let value): "\(value)"
     case .null: "null"
+    case .`return`(let value): "\(value)"
     }
   }
 }

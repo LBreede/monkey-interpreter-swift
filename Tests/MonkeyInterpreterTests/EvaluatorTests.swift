@@ -12,7 +12,7 @@ import Testing
 
   for (input, expected) in tests {
     let evaluated = testEval(input)
-    #expect(evaluated == .integer(expected))
+    #expect(testIntegerObject(evaluated, expected))
   }
 }
 
@@ -61,6 +61,52 @@ import Testing
   }
 }
 
+@Test func evalIfElseExpressions() {
+  let tests = [
+    ("if (true) { 10 }", 10),
+    ("if (false) { 10 }", nil),
+    ("if (1) { 10 }", 10),
+    ("if (1 < 2) { 10 }", 10),
+    ("if (1 > 2) { 10 }", nil),
+    ("if (1 > 2) { 10 } else { 20 }", 20),
+    ("if (1 < 2) { 10 } else { 20 }", 10),
+  ]
+  for (input, expected) in tests {
+    let evaluated = testEval(input)
+    if expected == nil {
+      #expect(testNullObject(evaluated))
+    } else {
+      #expect(testIntegerObject(evaluated, expected!))
+    }
+  }
+}
+
+@Test func evalReturnStatements() {
+  let tests = [
+    ("return 10;", 10),
+    ("return 10; 9;", 10),
+    ("return 2 * 5; 9;", 10),
+    ("9; return 2 * 5; 9;", 10),
+    ("if (false) { return 10; } 20;", 20),
+    ("if (false) { 10 } else { return 20; } 30;", 20),
+    (
+      """
+      if (10 > 1) {
+        if (10 > 1) {
+          return 10;
+        }
+        return 1;
+      }
+      """, 10
+    ),
+  ]
+
+  for (input, expected) in tests {
+    let evaluated = testEval(input)
+    #expect(testIntegerObject(evaluated, expected))
+  }
+}
+
 func testEval(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Object {
   var parser = Parser(lexer: Lexer(input: input))
   let program = parser.parseProgram()
@@ -71,4 +117,24 @@ func testEval(_ input: String, sourceLocation: SourceLocation = #_sourceLocation
     return .null
   }
   return eval(program)
+}
+
+func testIntegerObject(_ obj: Object, _ expected: Int) -> Bool {
+  guard case .integer(let value) = obj else {
+    Issue.record("object is not Integer. got=\(obj)")
+    return false
+  }
+  if value != expected {
+    Issue.record("object has wrong value. got=\(value), want=\(expected)")
+    return false
+  }
+  return true
+}
+
+func testNullObject(_ obj: Object) -> Bool {
+  if obj != nullObject {
+    Issue.record("object is not NULL. got=\(obj)")
+    return false
+  }
+  return true
 }

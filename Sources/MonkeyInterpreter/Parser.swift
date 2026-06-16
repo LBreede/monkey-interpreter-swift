@@ -59,13 +59,13 @@ struct Parser {
     nextToken()
     guard let value = parseExpression(.lowest) else { return nil }
     if peekTokenIs(.semicolon) { nextToken() }
-    return .`return`(value: value)
+    return .`return`(value)
   }
 
   private mutating func parseExpressionStatement() -> Statement? {
     guard let value = parseExpression(.lowest) else { return nil }
     if peekTokenIs(.semicolon) { nextToken() }
-    return .expression(value: value)
+    return .expression(value)
   }
 
   // MARK: Expressions
