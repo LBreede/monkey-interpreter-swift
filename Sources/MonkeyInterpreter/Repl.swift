@@ -1,6 +1,6 @@
 enum ReplMode {
   case tokens
-  case statements
+  case ast
   case evaluator
 }
 
@@ -18,7 +18,7 @@ struct ReplOptions {
       if arguments.contains("--tokens") {
         .tokens
       } else if arguments.contains("--ast") {
-        .statements
+        .ast
       } else {
         .evaluator
       }
@@ -53,7 +53,7 @@ func startRepl(options: ReplOptions = ReplOptions()) {
       for token in Lexer(input: input) {
         debugPrint(token)
       }
-    case .statements:
+    case .ast:
       var parser = Parser(lexer: Lexer(input: input))
       let program = parser.parseProgram()
       guard parser.errors.isEmpty else {
