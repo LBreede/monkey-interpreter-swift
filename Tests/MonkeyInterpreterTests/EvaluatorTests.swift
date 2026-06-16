@@ -40,13 +40,13 @@ import Testing
   ]
   for (input, expected) in tests {
     let evaluated = testEval(input)
-    #expect(evaluated == .boolean(expected))
+    #expect(testBooleanObject(evaluated, expected))
   }
 }
 
 @Test func evalReturnsLastStatement() {
-  #expect(testEval("5; 10;") == .integer(value: 10))
-  #expect(testEval("true; false;") == .boolean(false))
+  #expect(testIntegerObject(testEval("5; 10;"), 10))
+  #expect(testBooleanObject(testEval("true; false;"), false))
 }
 
 @Test func bangOperator() {
@@ -57,7 +57,7 @@ import Testing
 
   for (input, expected) in tests {
     let evaluated = testEval(input)
-    #expect(evaluated == .boolean(expected))
+    #expect(testBooleanObject(evaluated, expected))
   }
 }
 
@@ -154,6 +154,50 @@ import Testing
   }
 }
 
+@Test func functionObject() {
+  let input = "fn(x) { x + 2; };"
+
+  let evaluated = testEval(input)
+  guard case .function(let parameters, let body, _) = evaluated else {
+    Issue.record("object is not a Function. got=\(evaluated)")
+    return
+  }
+
+  guard parameters.count == 1 else {
+    Issue.record("function has wrong parameters. Parameters=\(parameters)")
+    return
+  }
+
+  guard parameters[0] == "x" else {
+    Issue.record("parameter is not 'x'. got=\(parameters[0])")
+    return
+  }
+
+  guard body.statements.count == 1 else {
+    Issue.record("function body has wrong number of statements. got=\(body.statements.count)")
+    return
+  }
+
+  let expectedBody = "(x + 2)"
+  if body.statements.first?.description != expectedBody {
+    Issue.record("body is not \(expectedBody). got=\(body)")
+  }
+}
+
+@Test func functionApplication() {
+  let tests = [
+    ("let identity = fn(x) { x; }; identity(5);", 5),
+    ("let identity = fn(x) { return x; }; identity(5);", 5),
+    ("let double = fn(x) { x * 2; }; double(5);", 10),
+    ("let add = fn(x, y) { x + y; }; add(5, 5);", 10),
+    ("let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20),
+    ("fn(x) { x; }(5)", 5),
+  ]
+  for (input, expected) in tests {
+    #expect(testIntegerObject(testEval(input), expected))
+  }
+}
+
 func testEval(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Object {
   var parser = Parser(lexer: Lexer(input: input))
   let program = parser.parseProgram()
@@ -179,10 +223,24 @@ func testIntegerObject(_ obj: Object, _ expected: Int) -> Bool {
   return true
 }
 
-func testNullObject(_ obj: Object) -> Bool {
-  if obj != nullObject {
-    Issue.record("object is not NULL. got=\(obj)")
+func testBooleanObject(_ obj: Object, _ expected: Bool) -> Bool {
+  guard case .boolean(let value) = obj else {
+    Issue.record("object is not Boolean. got=\(obj)")
+    return false
+  }
+  if value != expected {
+    Issue.record("object has wrong value. got=\(value), want=\(expected)")
     return false
   }
   return true
+}
+
+func testNullObject(_ object: Object) -> Bool {
+  switch object {
+  case .null:
+    return true
+  default:
+    Issue.record("object is not NULL. got=\(object)")
+    return false
+  }
 }

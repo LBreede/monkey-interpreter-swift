@@ -18,7 +18,7 @@ private let monkeyFace = #"""
              '-----'
   """#
 
-func startRepl(mode: ReplMode = .evaluator) {
+func startRepl(mode: ReplMode = .evaluator, debug: Bool = false) {
   let prompt = ">> "
   let environment = Environment()
 
@@ -47,11 +47,19 @@ func startRepl(mode: ReplMode = .evaluator) {
         continue
       }
       let evaluated = eval(program, environment)
-      if evaluated != nullObject {
+      if case .null = evaluated {
+        printEnvironmentDebug(environment, enabled: debug)
+      } else {
         print(evaluated)
+        printEnvironmentDebug(environment, enabled: debug)
       }
     }
   }
+}
+
+private func printEnvironmentDebug(_ environment: Environment, enabled: Bool) {
+  guard enabled else { return }
+  debugPrint(environment)
 }
 
 func printParserErrors(_ errors: [String]) {

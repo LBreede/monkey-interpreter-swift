@@ -4,7 +4,8 @@ A Swift implementation of the Monkey language from *Writing an Interpreter in Go
 
 This project currently covers lexing, parsing, and the beginning of evaluation.
 The default REPL evaluates integers, booleans, prefix and infix expressions,
-conditionals, return statements, and multi-statement input. Parser and lexer
+conditionals, return statements, multi-statement input, `let` bindings, function
+literals, and function calls backed by persistent environments. Parser and lexer
 debug modes are also available.
 
 ## Run the REPL
@@ -44,6 +45,55 @@ true
 20
 >> 5; 10;
 10
+>> let answer = 42;
+>> answer;
+42
+>> let double = answer * 2;
+>> double;
+84
+>> double == answer;
+false
+>> missingName;
+ERROR: identifier not found: missingName
+>> let add = fn(x, y) { x + y; };
+>> add(5, 5);
+10
+>> let identity = fn(x) { return x; };
+>> identity(42);
+42
+>> fn(x) { x * 2; }(21);
+42
+>>
+```
+
+`let` statements bind names in the current REPL environment and do not print a
+result. Later input can read those bindings by identifier.
+
+Function literals evaluate to function objects that capture their defining
+environment. Function calls evaluate arguments, bind them to parameters in an
+enclosed environment, evaluate the function body, and unwrap explicit `return`
+values.
+
+## Debug the Environment
+
+Pass `--debug` to print the current evaluator environment after every input:
+
+```sh
+swift run MonkeyInterpreter --debug
+```
+
+Example:
+
+```text
+Hello stranger! This is the Monkey programming language!
+Feel free to type in commands
+>> let answer = 42;
+Environment([answer: 42])
+>> let double = fn(x) { x * 2; };
+Environment([answer: 42, double: fn(x) { (x * 2) }])
+>> double(answer);
+84
+Environment([answer: 42, double: fn(x) { (x * 2) }])
 >>
 ```
 
@@ -94,8 +144,8 @@ let version = ((1 + (50 / 2)) - (8 * 3));
 ```
 
 Another example, adapted from the Monkey website, shows function literals and
-calls. Comments and evaluation are not implemented yet, so this example omits
-the original comments and prints parsed AST strings instead of a result value.
+calls in AST mode. Comments are not implemented yet, so this example omits the
+original comments and prints parsed AST strings instead of evaluated results.
 
 ```monkey
 let newAdder = fn(a, b) {

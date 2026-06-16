@@ -15,4 +15,5 @@ let mode: ReplMode =
   } else {
     .evaluator
   }
-startRepl(mode: mode)
+let debug = CommandLine.arguments.contains("--debug")
+startRepl(mode: mode, debug: debug)
