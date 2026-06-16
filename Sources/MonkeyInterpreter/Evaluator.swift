@@ -19,6 +19,7 @@ func eval(_ expression: Expression) -> Object {
   switch expression {
   case .integer(let value): return .integer(value)
   case .boolean(let value): return nativeBoolToBooleanObject(value)
+  case .prefix(let op, let right): return evalPrefixExpression(op.description, eval(right))
   default: return nullObject
   }
 }
@@ -35,4 +36,26 @@ func evalStatements(_ statements: [Statement]) -> Object {
 
 func nativeBoolToBooleanObject(_ value: Bool) -> Object {
   value ? trueObject : falseObject
+}
+
+func evalPrefixExpression(_ op: String, _ right: Object) -> Object {
+  switch op {
+  case "!": return evalBangOperatorExpression(right)
+  case "-": return evalMinusPrefixOperatorExpression(right)
+  default: return nullObject
+  }
+}
+
+func evalBangOperatorExpression(_ right: Object) -> Object {
+  switch right {
+  case trueObject: return falseObject
+  case falseObject: return trueObject
+  case nullObject: return trueObject
+  default: return falseObject
+  }
+}
+
+func evalMinusPrefixOperatorExpression(_ right: Object) -> Object {
+  guard case .integer(let value) = right else { return nullObject }
+  return .integer(-value)
 }

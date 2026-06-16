@@ -3,7 +3,7 @@ import Testing
 @testable import MonkeyInterpreter
 
 @Test func evalIntegerExpression() {
-  let tests = [("5", 5), ("10", 10)]
+  let tests = [("5", 5), ("10", 10), ("-5", -5), ("-10", -10)]
 
   for (input, expected) in tests {
     let evaluated = testEval(input)
@@ -22,6 +22,19 @@ import Testing
 @Test func evalReturnsLastStatement() {
   #expect(testEval("5; 10;") == .integer(10))
   #expect(testEval("true; false;") == .boolean(false))
+}
+
+@Test func bangOperator() {
+  let tests = [
+    ("!true", false), ("!false", true), ("!5", false), ("!!true", true), ("!!false", false),
+    ("!!5", true),
+  ]
+
+  for (input, expected) in tests {
+    let evaluated = testEval(input)
+    #expect(evaluated == .boolean(expected))
+  }
+
 }
 
 func testEval(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Object {
