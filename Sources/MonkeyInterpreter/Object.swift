@@ -1,8 +1,8 @@
 enum Object: Equatable, Sendable {
-  case integer(Int)
+  case integer(value: Int)
   case boolean(Bool)
   case null
-  indirect case `return`(Object)
+  indirect case returnValue(value: Object)
   case error(message: String)
 }
 
@@ -12,7 +12,7 @@ extension Object: CustomStringConvertible {
     case .integer(let value): "\(value)"
     case .boolean(let value): "\(value)"
     case .null: "null"
-    case .`return`(let value): "\(value)"
+    case .returnValue(let value): "\(value)"
     case .error(let message): "ERROR: \(message)"
     }
   }

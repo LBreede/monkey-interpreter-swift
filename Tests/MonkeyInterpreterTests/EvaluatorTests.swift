@@ -45,7 +45,7 @@ import Testing
 }
 
 @Test func evalReturnsLastStatement() {
-  #expect(testEval("5; 10;") == .integer(10))
+  #expect(testEval("5; 10;") == .integer(value: 10))
   #expect(testEval("true; false;") == .boolean(false))
 }
 

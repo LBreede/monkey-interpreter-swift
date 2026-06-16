@@ -25,7 +25,7 @@ import Testing
   let program = parseProgram(input)
   try #require(program.statements.count == 3)
   for statement in program.statements {
-    guard case .`return`(_) = statement else {
+    guard case .returnStatement(_) = statement else {
       Issue.record("expected a return statement, got \(statement)")
       continue
     }
@@ -101,7 +101,8 @@ import Testing
 
 @Test func ifExpressions() throws {
   guard
-    case .`if`(let condition, let consequence, let alternative) = soleExpression("if (x < y) { x }")
+    case .ifExpression(let condition, let consequence, let alternative) = soleExpression(
+      "if (x < y) { x }")
   else {
     Issue.record("expected if expression")
     return
@@ -109,13 +110,13 @@ import Testing
 
   #expect(condition == .infix(left: .identifier("x"), op: .lt, right: .identifier("y")))
   #expect(consequence.statements.count == 1)
-  #expect(consequence.statements.first == .expression(.identifier("x")))
+  #expect(consequence.statements.first == .expression(value: .identifier("x")))
   #expect(alternative == nil)
 }
 
 @Test func ifElseParsing() throws {
   guard
-    case .`if`(let condition, let consequence, let alternative) = soleExpression(
+    case .ifExpression(let condition, let consequence, let alternative) = soleExpression(
       "if (x < y) { x } else { y }")
   else {
     Issue.record("expected if-else expression")
@@ -124,9 +125,9 @@ import Testing
 
   #expect(condition == .infix(left: .identifier("x"), op: .lt, right: .identifier("y")))
   #expect(consequence.statements.count == 1)
-  #expect(consequence.statements.first == .expression(.identifier("x")))
+  #expect(consequence.statements.first == .expression(value: .identifier("x")))
   #expect(alternative?.statements.count == 1)
-  #expect(alternative?.statements.first == .expression(.identifier("y")))
+  #expect(alternative?.statements.first == .expression(value: .identifier("y")))
 }
 
 @Test func functionLiteralParsing() throws {
@@ -138,7 +139,7 @@ import Testing
   #expect(body.statements.count == 1)
   #expect(
     body.statements.first
-      == .expression(.infix(left: .identifier("x"), op: .plus, right: .identifier("y"))))
+      == .expression(value: .infix(left: .identifier("x"), op: .plus, right: .identifier("y"))))
 }
 
 @Test func functionParameterParsing() throws {
@@ -184,7 +185,7 @@ func parseProgram(_ input: String, sourceLocation: SourceLocation = #_sourceLoca
 func expectLetStatement(
   _ statement: Statement, name: String, sourceLocation: SourceLocation = #_sourceLocation
 ) {
-  guard case .`let`(let boundName, _) = statement else {
+  guard case .letStatement(let boundName, _) = statement else {
     Issue.record("expected a let statement, got \(statement)", sourceLocation: sourceLocation)
     return
   }

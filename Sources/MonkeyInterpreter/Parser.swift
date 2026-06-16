@@ -52,20 +52,20 @@ struct Parser {
     nextToken()
     guard let value = parseExpression(.lowest) else { return nil }
     if peekTokenIs(.semicolon) { nextToken() }
-    return .`let`(name: name, value: value)
+    return .letStatement(name: name, value: value)
   }
 
   private mutating func parseReturnStatement() -> Statement? {
     nextToken()
     guard let value = parseExpression(.lowest) else { return nil }
     if peekTokenIs(.semicolon) { nextToken() }
-    return .`return`(value)
+    return .returnStatement(value: value)
   }
 
   private mutating func parseExpressionStatement() -> Statement? {
     guard let value = parseExpression(.lowest) else { return nil }
     if peekTokenIs(.semicolon) { nextToken() }
-    return .expression(value)
+    return .expression(value: value)
   }
 
   // MARK: Expressions
@@ -149,7 +149,7 @@ struct Parser {
       alternative = parseBlockStatement()
     }
 
-    return .`if`(condition: condition, consequence: consequence, alternative: alternative)
+    return .ifExpression(condition: condition, consequence: consequence, alternative: alternative)
   }
 
   private mutating func parseBlockStatement() -> BlockStatement {

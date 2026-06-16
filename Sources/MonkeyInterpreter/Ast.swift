@@ -1,7 +1,7 @@
 indirect enum Statement: Equatable {
-  case `let`(name: String, value: Expression)
-  case `return`(Expression)
-  case expression(Expression)
+  case letStatement(name: String, value: Expression)
+  case returnStatement(value: Expression)
+  case expression(value: Expression)
 }
 
 enum Expression: Equatable {
@@ -10,7 +10,7 @@ enum Expression: Equatable {
   case boolean(Bool)
   indirect case prefix(op: Token, right: Expression)
   indirect case infix(left: Expression, op: Token, right: Expression)
-  indirect case `if`(
+  indirect case ifExpression(
     condition: Expression, consequence: BlockStatement, alternative: BlockStatement?)
   indirect case function(parameters: [String], body: BlockStatement)
   indirect case call(function: Expression, arguments: [Expression])
@@ -27,8 +27,8 @@ struct BlockStatement: Equatable {
 extension Statement: CustomStringConvertible {
   var description: String {
     switch self {
-    case .`let`(let name, let value): "let \(name) = \(value);"
-    case .`return`(let value): "return \(value);"
+    case .letStatement(let name, let value): "let \(name) = \(value);"
+    case .returnStatement(let value): "return \(value);"
     case .expression(let value): "\(value)"
     }
   }
@@ -42,7 +42,7 @@ extension Expression: CustomStringConvertible {
     case .boolean(let value): return String(value)
     case .prefix(let op, let right): return "(\(op)\(right))"
     case .infix(let left, let op, let right): return "(\(left) \(op) \(right))"
-    case .`if`(let condition, let consequence, let alternative):
+    case .ifExpression(let condition, let consequence, let alternative):
       var s = "if \(condition) \(consequence)"
       if let alt = alternative {
         s += " else \(alt)"
