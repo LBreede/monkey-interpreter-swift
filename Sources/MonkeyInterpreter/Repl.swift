@@ -1,6 +1,7 @@
 enum ReplMode {
   case tokens
   case statements
+  case evaluator
 }
 
 private let monkeyFace = #"""
@@ -17,7 +18,7 @@ private let monkeyFace = #"""
              '-----'
   """#
 
-func startRepl(mode: ReplMode = .statements) {
+func startRepl(mode: ReplMode = .evaluator) {
   let prompt = ">> "
   while true {
     print(prompt, terminator: "")
@@ -36,6 +37,16 @@ func startRepl(mode: ReplMode = .statements) {
         continue
       }
       print(program)
+    case .evaluator:
+      var parser = Parser(lexer: Lexer(input: input))
+      let program = parser.parseProgram()
+      guard parser.errors.isEmpty else {
+        printParserErrors(parser.errors)
+        continue
+      }
+      let evaluated = eval(program)
+      print(evaluated)
+
     }
   }
 }

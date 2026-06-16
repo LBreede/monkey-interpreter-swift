@@ -1,7 +1,7 @@
 indirect enum Statement: Equatable {
   case `let`(name: String, value: Expression)
   case `return`(value: Expression)
-  case statement(value: Expression)
+  case expression(value: Expression)
 }
 
 enum Expression: Equatable {
@@ -29,7 +29,7 @@ extension Statement: CustomStringConvertible {
     switch self {
     case .`let`(let name, let value): "let \(name) = \(value);"
     case .`return`(let value): "return \(value);"
-    case .statement(let value): "\(value)"
+    case .expression(let value): "\(value)"
     }
   }
 }

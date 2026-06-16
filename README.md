@@ -2,14 +2,35 @@
 
 A Swift implementation of the Monkey language from *Writing an Interpreter in Go*.
 
-This project currently covers lexing and parsing. The REPL reads Monkey source and
-prints the parsed AST back as a string. The output is meant for structural parser
-debugging, not pretty-printing.
+This project currently covers lexing, parsing, and the beginning of evaluation.
+The default REPL evaluates Monkey source. Parser and lexer debug modes are also
+available.
 
 ## Run the REPL
 
 ```sh
 swift run MonkeyInterpreter
+```
+
+Example:
+
+```text
+Hello stranger! This is the Monkey programming language!
+Feel free to type in commands
+>> 5;
+5
+>> true;
+true
+>>
+```
+
+## Print the AST
+
+Pass `--ast` to parse input and print the parsed AST back as a string. The
+output is meant for structural parser debugging, not pretty-printing.
+
+```sh
+swift run MonkeyInterpreter --ast
 ```
 
 Example Monkey source:
@@ -75,7 +96,7 @@ adder(8)
 ## Print Tokens
 
 Pass `--tokens` to run the lexer directly and print tokens instead of parsed
-statements:
+statements or evaluated objects:
 
 ```sh
 swift run MonkeyInterpreter --tokens

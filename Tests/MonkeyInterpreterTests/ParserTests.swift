@@ -109,7 +109,7 @@ import Testing
 
   #expect(condition == .infix(left: .identifier("x"), op: .lt, right: .identifier("y")))
   #expect(consequence.statements.count == 1)
-  #expect(consequence.statements.first == .statement(value: .identifier("x")))
+  #expect(consequence.statements.first == .expression(value: .identifier("x")))
   #expect(alternative == nil)
 }
 
@@ -124,9 +124,9 @@ import Testing
 
   #expect(condition == .infix(left: .identifier("x"), op: .lt, right: .identifier("y")))
   #expect(consequence.statements.count == 1)
-  #expect(consequence.statements.first == .statement(value: .identifier("x")))
+  #expect(consequence.statements.first == .expression(value: .identifier("x")))
   #expect(alternative?.statements.count == 1)
-  #expect(alternative?.statements.first == .statement(value: .identifier("y")))
+  #expect(alternative?.statements.first == .expression(value: .identifier("y")))
 }
 
 @Test func functionLiteralParsing() throws {
@@ -138,7 +138,7 @@ import Testing
   #expect(body.statements.count == 1)
   #expect(
     body.statements.first
-      == .statement(value: .infix(left: .identifier("x"), op: .plus, right: .identifier("y"))))
+      == .expression(value: .infix(left: .identifier("x"), op: .plus, right: .identifier("y"))))
 }
 
 @Test func functionParameterParsing() throws {
@@ -191,7 +191,8 @@ func expectLetStatement(
   #expect(boundName == name, sourceLocation: sourceLocation)
 }
 
-func checkParserErrors(_ parser: Parser, sourceLocation: SourceLocation = #_sourceLocation) -> Bool {
+func checkParserErrors(_ parser: Parser, sourceLocation: SourceLocation = #_sourceLocation) -> Bool
+{
   guard parser.errors.isEmpty else {
     for message in parser.errors {
       Issue.record("parser error: \(message)", sourceLocation: sourceLocation)
@@ -210,7 +211,7 @@ func soleExpression(_ input: String, sourceLocation: SourceLocation = #_sourceLo
       "expected 1 statement, got \(program.statements.count)", sourceLocation: sourceLocation)
     return nil
   }
-  guard case .statement(let expression) = program.statements[0] else {
+  guard case .expression(let expression) = program.statements[0] else {
     Issue.record(
       "not an expression statement: \(program.statements[0])", sourceLocation: sourceLocation)
     return nil
