@@ -3,6 +3,7 @@ enum Object: Equatable, Sendable {
   case boolean(Bool)
   case null
   indirect case `return`(Object)
+  case error(message: String)
 }
 
 extension Object: CustomStringConvertible {
@@ -12,6 +13,7 @@ extension Object: CustomStringConvertible {
     case .boolean(let value): "\(value)"
     case .null: "null"
     case .`return`(let value): "\(value)"
+    case .error(let message): "ERROR: \(message)"
     }
   }
 }

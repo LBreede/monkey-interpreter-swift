@@ -9,6 +9,9 @@ func eval(_ program: Program) -> Object {
     if case .`return`(let value) = result {
       return value
     }
+    if isError(result) {
+      return result
+    }
   }
   return result
 }
@@ -18,6 +21,9 @@ func eval(_ block: BlockStatement) -> Object {
   for statement in block.statements {
     result = eval(statement)
     if case .`return`(_) = result {
+      return result
+    }
+    if isError(result) {
       return result
     }
   }
@@ -36,8 +42,16 @@ func eval(_ expression: Expression) -> Object {
   switch expression {
   case .integer(let value): return .integer(value)
   case .boolean(let value): return nativeBoolToBooleanObject(value)
-  case .prefix(let op, let right): return evalPrefixExpression(op, eval(right))
-  case .infix(let left, let op, let right): return evalInfixExpression(op, eval(left), eval(right))
+  case .prefix(let op, let right):
+    let evaluatedRight = eval(right)
+    if isError(evaluatedRight) { return evaluatedRight }
+    return evalPrefixExpression(op, evaluatedRight)
+  case .infix(let left, let op, let right):
+    let evaluatedLeft = eval(left)
+    if isError(evaluatedLeft) { return evaluatedLeft }
+    let evaluatedRight = eval(right)
+    if isError(evaluatedRight) { return evaluatedRight }
+    return evalInfixExpression(op, evaluatedLeft, evaluatedRight)
   case .`if`(let condition, let consequence, let alternative):
     return evalIfExpression(condition, consequence, alternative)
   default: return nullObject
@@ -52,7 +66,7 @@ func evalPrefixExpression(_ op: Token, _ right: Object) -> Object {
   switch op {
   case .bang: return evalBangOperatorExpression(right)
   case .minus: return evalMinusPrefixOperatorExpression(right)
-  default: return nullObject
+  default: return .error(message: "unknown operator: \(op)\(objectType(right))")
   }
 }
 
@@ -66,7 +80,9 @@ func evalBangOperatorExpression(_ right: Object) -> Object {
 }
 
 func evalMinusPrefixOperatorExpression(_ right: Object) -> Object {
-  guard case .integer(let value) = right else { return nullObject }
+  guard case .integer(let value) = right else {
+    return .error(message: "unknown operator: -\(objectType(right))")
+  }
   return .integer(-value)
 }
 
@@ -76,7 +92,11 @@ func evalInfixExpression(_ op: Token, _ left: Object, _ right: Object) -> Object
     return evalIntegerInfixExpression(op, left, right)
   case (.eq, _, _): return nativeBoolToBooleanObject(left == right)
   case (.notEq, _, _): return nativeBoolToBooleanObject(left != right)
-  default: return nullObject
+  case (_, _, _) where objectType(left) != objectType(right):
+    return .error(message: "type mismatch: \(objectType(left)) \(op) \(objectType(right))")
+  default:
+
+    return .error(message: "unknown operator: \(objectType(left)) \(op) \(objectType(right))")
   }
 }
 
@@ -98,6 +118,7 @@ func evalIfExpression(
   _ condition: Expression, _ consequence: BlockStatement, _ alternative: BlockStatement?
 ) -> Object {
   let condition = eval(condition)
+  if isError(condition) { return condition }
 
   if isTruthy(condition) {
     return eval(consequence)
@@ -115,4 +136,21 @@ func isTruthy(_ obj: Object) -> Bool {
   case falseObject: return false
   default: return true
   }
+}
+
+func objectType(_ object: Object) -> String {
+  switch object {
+  case .integer: return "INTEGER"
+  case .boolean: return "BOOLEAN"
+  case .null: return "NULL"
+  case .`return`: return "RETURN"
+  case .error: return "ERROR"
+  }
+}
+
+func isError(_ object: Object) -> Bool {
+  if case .error = object {
+    return true
+  }
+  return false
 }
