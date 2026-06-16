@@ -50,7 +50,7 @@ func eval(_ expression: Expression, _ environment: Environment) -> Object {
   switch expression {
   case .identifier(let name): return evalIdentifier(name, environment)
   case .integer(let value): return .integer(value: value)
-  case .boolean(let value): return nativeBoolToBooleanObject(value)
+  case .boolean(let value): return booleanObject(value)
   case .prefix(let op, let right):
     let evaluatedRight = eval(right, environment)
     if isError(evaluatedRight) { return evaluatedRight }
@@ -78,7 +78,7 @@ private func evalIdentifier(_ name: String, _ environment: Environment) -> Objec
   environment.get(name: name) ?? .error(message: "identifier not found: \(name)")
 }
 
-private func nativeBoolToBooleanObject(_ value: Bool) -> Object {
+private func booleanObject(_ value: Bool) -> Object {
   value ? trueObject : falseObject
 }
 
@@ -111,9 +111,9 @@ private func evalInfixExpression(_ op: Token, _ left: Object, _ right: Object) -
   case (_, .integer(let left), .integer(let right)):
     return evalIntegerInfixExpression(op, left, right)
   case (.eq, .boolean(let left), .boolean(let right)):
-    return nativeBoolToBooleanObject(left == right)
+    return booleanObject(left == right)
   case (.notEq, .boolean(let left), .boolean(let right)):
-    return nativeBoolToBooleanObject(left != right)
+    return booleanObject(left != right)
   case (.eq, .null, .null):
     return trueObject
   case (.notEq, .null, .null):
@@ -131,10 +131,10 @@ private func evalIntegerInfixExpression(_ op: Token, _ left: Int, _ right: Int) 
   case .minus: return .integer(value: left - right)
   case .asterisk: return .integer(value: left * right)
   case .slash: return .integer(value: left / right)
-  case .lt: return nativeBoolToBooleanObject(left < right)
-  case .gt: return nativeBoolToBooleanObject(left > right)
-  case .eq: return nativeBoolToBooleanObject(left == right)
-  case .notEq: return nativeBoolToBooleanObject(left != right)
+  case .lt: return booleanObject(left < right)
+  case .gt: return booleanObject(left > right)
+  case .eq: return booleanObject(left == right)
+  case .notEq: return booleanObject(left != right)
   default: return nullObject
   }
 }
