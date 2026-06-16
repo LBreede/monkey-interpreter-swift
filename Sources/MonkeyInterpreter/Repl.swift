@@ -20,6 +20,8 @@ private let monkeyFace = #"""
 
 func startRepl(mode: ReplMode = .evaluator) {
   let prompt = ">> "
+  let environment = Environment()
+
   while true {
     print(prompt, terminator: "")
     guard let input = readLine() else { return }
@@ -44,9 +46,10 @@ func startRepl(mode: ReplMode = .evaluator) {
         printParserErrors(parser.errors)
         continue
       }
-      let evaluated = eval(program)
-      print(evaluated)
-
+      let evaluated = eval(program, environment)
+      if evaluated != nullObject {
+        print(evaluated)
+      }
     }
   }
 }

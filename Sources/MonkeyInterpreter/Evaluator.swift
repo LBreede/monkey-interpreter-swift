@@ -2,10 +2,10 @@ let trueObject: Object = .boolean(true)
 let falseObject: Object = .boolean(false)
 let nullObject: Object = .null
 
-func eval(_ program: Program) -> Object {
+func eval(_ program: Program, _ environment: Environment) -> Object {
   var result = nullObject
   for statement in program.statements {
-    result = eval(statement)
+    result = eval(statement, environment)
 
     if case .returnValue(let value) = result {
       return value
@@ -17,10 +17,10 @@ func eval(_ program: Program) -> Object {
   return result
 }
 
-func eval(_ block: BlockStatement) -> Object {
+func eval(_ block: BlockStatement, _ environment: Environment) -> Object {
   var result = nullObject
   for statement in block.statements {
-    result = eval(statement)
+    result = eval(statement, environment)
     if case .returnValue(_) = result {
       return result
     }
@@ -31,35 +31,44 @@ func eval(_ block: BlockStatement) -> Object {
   return result
 }
 
-func eval(_ statement: Statement) -> Object {
+func eval(_ statement: Statement, _ environment: Environment) -> Object {
   switch statement {
-  case .expression(let value): return eval(value)
+  case .letStatement(let name, let value):
+    let val = eval(value, environment)
+    if isError(val) { return val }
+    environment.set(name: name, value: val)
+    return nullObject
   case .returnStatement(let value):
-    let val = eval(value)
+    let val = eval(value, environment)
     if isError(val) { return val }
     return .returnValue(value: val)
+  case .expression(let value): return eval(value, environment)
+  }
+}
+
+func eval(_ expression: Expression, _ environment: Environment) -> Object {
+  switch expression {
+  case .identifier(let name): return evalIdentifier(name, environment)
+  case .integer(let value): return .integer(value: value)
+  case .boolean(let value): return nativeBoolToBooleanObject(value)
+  case .prefix(let op, let right):
+    let evaluatedRight = eval(right, environment)
+    if isError(evaluatedRight) { return evaluatedRight }
+    return evalPrefixExpression(op, evaluatedRight)
+  case .infix(let left, let op, let right):
+    let evaluatedLeft = eval(left, environment)
+    if isError(evaluatedLeft) { return evaluatedLeft }
+    let evaluatedRight = eval(right, environment)
+    if isError(evaluatedRight) { return evaluatedRight }
+    return evalInfixExpression(op, evaluatedLeft, evaluatedRight)
+  case .ifExpression(let condition, let consequence, let alternative):
+    return evalIfExpression(condition, consequence, alternative, environment)
   default: return nullObject
   }
 }
 
-func eval(_ expression: Expression) -> Object {
-  switch expression {
-  case .integer(let value): return .integer(value: value)
-  case .boolean(let value): return nativeBoolToBooleanObject(value)
-  case .prefix(let op, let right):
-    let evaluatedRight = eval(right)
-    if isError(evaluatedRight) { return evaluatedRight }
-    return evalPrefixExpression(op, evaluatedRight)
-  case .infix(let left, let op, let right):
-    let evaluatedLeft = eval(left)
-    if isError(evaluatedLeft) { return evaluatedLeft }
-    let evaluatedRight = eval(right)
-    if isError(evaluatedRight) { return evaluatedRight }
-    return evalInfixExpression(op, evaluatedLeft, evaluatedRight)
-  case .ifExpression(let condition, let consequence, let alternative):
-    return evalIfExpression(condition, consequence, alternative)
-  default: return nullObject
-  }
+func evalIdentifier(_ name: String, _ environment: Environment) -> Object {
+  environment.get(name: name) ?? .error(message: "identifier not found: \(name)")
 }
 
 func nativeBoolToBooleanObject(_ value: Bool) -> Object {
@@ -119,15 +128,16 @@ func evalIntegerInfixExpression(_ op: Token, _ left: Int, _ right: Int) -> Objec
 }
 
 func evalIfExpression(
-  _ condition: Expression, _ consequence: BlockStatement, _ alternative: BlockStatement?
+  _ condition: Expression, _ consequence: BlockStatement, _ alternative: BlockStatement?,
+  _ environment: Environment
 ) -> Object {
-  let condition = eval(condition)
+  let condition = eval(condition, environment)
   if isError(condition) { return condition }
 
   if isTruthy(condition) {
-    return eval(consequence)
+    return eval(consequence, environment)
   } else if let alternative {
-    return eval(alternative)
+    return eval(alternative, environment)
   } else {
     return nullObject
   }

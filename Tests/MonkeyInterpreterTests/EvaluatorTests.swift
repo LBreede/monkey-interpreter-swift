@@ -127,6 +127,7 @@ import Testing
       """,
       "unknown operator: BOOLEAN + BOOLEAN"
     ),
+    ("foobar", "identifier not found: foobar"),
   ]
 
   for (input, expectedMessage) in tests {
@@ -141,16 +142,29 @@ import Testing
   }
 }
 
+@Test func evalLetStatements() {
+  let tests = [
+    ("let a = 5; a;", 5),
+    ("let a = 5 * 5; a;", 25),
+    ("let a = 5; let b = a; b;", 5),
+    ("let a = 5; let b = a; let c = a + b + 5; c;", 15),
+  ]
+  for (input, expected) in tests {
+    #expect(testIntegerObject(testEval(input), expected))
+  }
+}
+
 func testEval(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Object {
   var parser = Parser(lexer: Lexer(input: input))
   let program = parser.parseProgram()
+  let environment = Environment()
   guard parser.errors.isEmpty else {
     for error in parser.errors {
       Issue.record("parser error: \(error)", sourceLocation: sourceLocation)
     }
     return .null
   }
-  return eval(program)
+  return eval(program, environment)
 }
 
 func testIntegerObject(_ obj: Object, _ expected: Int) -> Bool {
