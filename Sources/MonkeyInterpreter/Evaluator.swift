@@ -6,6 +6,7 @@ func eval(_ program: Program) -> Object {
   var result = nullObject
   for statement in program.statements {
     result = eval(statement)
+
     if case .returnValue(let value) = result {
       return value
     }
@@ -33,7 +34,10 @@ func eval(_ block: BlockStatement) -> Object {
 func eval(_ statement: Statement) -> Object {
   switch statement {
   case .expression(let value): return eval(value)
-  case .returnStatement(let value): return .returnValue(value: eval(value))
+  case .returnStatement(let value):
+    let val = eval(value)
+    if isError(val) { return val }
+    return .returnValue(value: val)
   default: return nullObject
   }
 }
@@ -149,8 +153,5 @@ func objectType(_ object: Object) -> String {
 }
 
 func isError(_ object: Object) -> Bool {
-  if case .error = object {
-    return true
-  }
-  return false
+  if case .error = object { true } else { false }
 }
