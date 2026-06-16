@@ -3,7 +3,8 @@
 A Swift implementation of the Monkey language from *Writing an Interpreter in Go*.
 
 This project currently covers lexing, parsing, and the beginning of evaluation.
-The default REPL evaluates Monkey source. Parser and lexer debug modes are also
+The default REPL evaluates integer literals, boolean literals, prefix
+expressions, and multi-statement input. Parser and lexer debug modes are also
 available.
 
 ## Run the REPL
@@ -19,8 +20,20 @@ Hello stranger! This is the Monkey programming language!
 Feel free to type in commands
 >> 5;
 5
+>> -10;
+-10
 >> true;
 true
+>> !true;
+false
+>> !false;
+true
+>> !5;
+false
+>> !!5;
+true
+>> 5; 10;
+10
 >>
 ```
 
