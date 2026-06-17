@@ -22,7 +22,7 @@ struct Parser {
   }
 
   mutating func parseProgram() -> Program {
-    var program = Program(statements: [])
+    var program = Program()
     while currToken != .eof {
       if let stmt = parseStatement() {
         program.statements.append(stmt)
@@ -153,7 +153,7 @@ struct Parser {
   }
 
   private mutating func parseBlockStatement() -> BlockStatement {
-    var block = BlockStatement(statements: [])
+    var block = BlockStatement()
 
     nextToken()
     while !currTokenIs(.rbrace) && !currTokenIs(.eof) {

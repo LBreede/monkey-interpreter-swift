@@ -18,10 +18,18 @@ enum Expression: Equatable {
 
 struct Program: Equatable {
   var statements: [Statement]
+
+  init(statements: [Statement] = []) {
+    self.statements = statements
+  }
 }
 
 struct BlockStatement: Equatable {
   var statements: [Statement]
+
+  init(statements: [Statement] = []) {
+    self.statements = statements
+  }
 }
 
 extension Statement: CustomStringConvertible {

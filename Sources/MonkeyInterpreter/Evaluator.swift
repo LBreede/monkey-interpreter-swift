@@ -86,7 +86,7 @@ private func evalPrefixExpression(_ op: Token, _ right: Object) -> Object {
   switch op {
   case .bang: return evalBangOperatorExpression(right)
   case .minus: return evalMinusPrefixOperatorExpression(right)
-  default: return .error(message: "unknown operator: \(op)\(objectType(right))")
+  default: return .error(message: "unknown operator: \(op)\(right.typeDescription)")
   }
 }
 
@@ -101,7 +101,7 @@ private func evalBangOperatorExpression(_ right: Object) -> Object {
 
 private func evalMinusPrefixOperatorExpression(_ right: Object) -> Object {
   guard case .integer(let value) = right else {
-    return .error(message: "unknown operator: -\(objectType(right))")
+    return .error(message: "unknown operator: -\(right.typeDescription)")
   }
   return .integer(value: -value)
 }
@@ -118,10 +118,10 @@ private func evalInfixExpression(_ op: Token, _ left: Object, _ right: Object) -
     return trueObject
   case (.notEq, .null, .null):
     return falseObject
-  case (_, _, _) where objectType(left) != objectType(right):
-    return .error(message: "type mismatch: \(objectType(left)) \(op) \(objectType(right))")
+  case (_, _, _) where left.typeDescription != right.typeDescription:
+    return .error(message: "type mismatch: \(left.typeDescription) \(op) \(right.typeDescription)")
   default:
-    return .error(message: "unknown operator: \(objectType(left)) \(op) \(objectType(right))")
+    return .error(message: "unknown operator: \(left.typeDescription) \(op) \(right.typeDescription)")
   }
 }
 
@@ -163,17 +163,6 @@ private func isTruthy(_ obj: Object) -> Bool {
   }
 }
 
-private func objectType(_ object: Object) -> String {
-  switch object {
-  case .integer: return "INTEGER"
-  case .boolean: return "BOOLEAN"
-  case .null: return "NULL"
-  case .returnValue: return "RETURN"
-  case .error: return "ERROR"
-  case .function: return "FUNCTION"
-  }
-}
-
 private func isError(_ object: Object) -> Bool {
   if case .error = object { true } else { false }
 }
@@ -190,7 +179,7 @@ private func evalExpressions(_ expressions: [Expression], _ environment: Environ
 
 private func applyFunction(_ function: Object, _ arguments: [Object]) -> Object {
   guard case .function(let parameters, let body, let environment) = function else {
-    return .error(message: "not a function: \(objectType(function))")
+    return .error(message: "not a function: \(function.typeDescription)")
   }
 
   guard parameters.count == arguments.count else {

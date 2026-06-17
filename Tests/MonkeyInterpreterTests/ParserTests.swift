@@ -177,7 +177,7 @@ func parseProgram(_ input: String, sourceLocation: SourceLocation = #_sourceLoca
   var parser = Parser(lexer: Lexer(input: input))
   let program = parser.parseProgram()
   if !checkParserErrors(parser, sourceLocation: sourceLocation) {
-    return Program(statements: [])
+    return Program()
   }
   return program
 }
