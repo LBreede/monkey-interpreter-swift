@@ -4,15 +4,26 @@ import Testing
 
 @Test func evaluatorEvaluatesIntegerExpressions() {
   let tests = [
-    ("5", 5), ("10", 10), ("-5", -5), ("-10", -10), ("5 + 5 + 5 + 5 - 10", 10),
-    ("2 * 2 * 2 * 2 * 2", 32), ("-50 + 100 + -50", 0), ("5 * 2 + 10", 20), ("5 + 2 * 10", 25),
-    ("20 + 2 * -10", 0), ("50 / 2 * 2 + 10", 60), ("2 * (5 + 10)", 30), ("3 * 3 * 3 + 10", 37),
-    ("3 * (3 * 3) + 10", 37), ("(5 + 10 * 2 + 15 / 3) * 2 + -10", 50),
+    ("5", 5),
+    ("10", 10),
+    ("-5", -5),
+    ("-10", -10),
+    ("5 + 5 + 5 + 5 - 10", 10),
+    ("2 * 2 * 2 * 2 * 2", 32),
+    ("-50 + 100 + -50", 0),
+    ("5 * 2 + 10", 20),
+    ("5 + 2 * 10", 25),
+    ("20 + 2 * -10", 0),
+    ("50 / 2 * 2 + 10", 60),
+    ("2 * (5 + 10)", 30),
+    ("3 * 3 * 3 + 10", 37),
+    ("3 * (3 * 3) + 10", 37),
+    ("(5 + 10 * 2 + 15 / 3) * 2 + -10", 50),
   ]
 
   for (input, expected) in tests {
     let evaluated = testEval(input)
-    #expect(testIntegerObject(evaluated, expected))
+    #expect(expectIntegerObject(evaluated, expected))
   }
 }
 
@@ -40,13 +51,13 @@ import Testing
   ]
   for (input, expected) in tests {
     let evaluated = testEval(input)
-    #expect(testBooleanObject(evaluated, expected))
+    #expect(expectBooleanObject(evaluated, expected))
   }
 }
 
 @Test func evaluatorReturnsLastStatement() {
-  #expect(testIntegerObject(testEval("5; 10;"), 10))
-  #expect(testBooleanObject(testEval("true; false;"), false))
+  #expect(expectIntegerObject(testEval("5; 10;"), 10))
+  #expect(expectBooleanObject(testEval("true; false;"), false))
 }
 
 @Test func evaluatorEvaluatesBangOperator() {
@@ -57,7 +68,7 @@ import Testing
 
   for (input, expected) in tests {
     let evaluated = testEval(input)
-    #expect(testBooleanObject(evaluated, expected))
+    #expect(expectBooleanObject(evaluated, expected))
   }
 }
 
@@ -74,9 +85,9 @@ import Testing
   for (input, expected) in tests {
     let evaluated = testEval(input)
     if expected == nil {
-      #expect(testNullObject(evaluated))
+      #expect(expectNullObject(evaluated))
     } else {
-      #expect(testIntegerObject(evaluated, expected!))
+      #expect(expectIntegerObject(evaluated, expected!))
     }
   }
 }
@@ -103,7 +114,7 @@ import Testing
 
   for (input, expected) in tests {
     let evaluated = testEval(input)
-    #expect(testIntegerObject(evaluated, expected))
+    #expect(expectIntegerObject(evaluated, expected))
   }
 }
 
@@ -150,7 +161,7 @@ import Testing
     ("let a = 5; let b = a; let c = a + b + 5; c;", 15),
   ]
   for (input, expected) in tests {
-    #expect(testIntegerObject(testEval(input), expected))
+    #expect(expectIntegerObject(testEval(input), expected))
   }
 }
 
@@ -194,7 +205,7 @@ import Testing
     ("fn(x) { x; }(5)", 5),
   ]
   for (input, expected) in tests {
-    #expect(testIntegerObject(testEval(input), expected))
+    #expect(expectIntegerObject(testEval(input), expected))
   }
 }
 
@@ -208,7 +219,7 @@ import Testing
     addTwo(2);
     """
 
-  #expect(testIntegerObject(testEval(input), 4))
+  #expect(expectIntegerObject(testEval(input), 4))
 }
 
 func testEval(_ input: String, sourceLocation: SourceLocation = #_sourceLocation) -> Object {
@@ -224,7 +235,7 @@ func testEval(_ input: String, sourceLocation: SourceLocation = #_sourceLocation
   return eval(program, environment)
 }
 
-func testIntegerObject(_ obj: Object, _ expected: Int) -> Bool {
+func expectIntegerObject(_ obj: Object, _ expected: Int) -> Bool {
   guard case .integer(let value) = obj else {
     Issue.record("object is not Integer. got=\(obj)")
     return false
@@ -236,7 +247,7 @@ func testIntegerObject(_ obj: Object, _ expected: Int) -> Bool {
   return true
 }
 
-func testBooleanObject(_ obj: Object, _ expected: Bool) -> Bool {
+func expectBooleanObject(_ obj: Object, _ expected: Bool) -> Bool {
   guard case .boolean(let value) = obj else {
     Issue.record("object is not Boolean. got=\(obj)")
     return false
@@ -248,7 +259,7 @@ func testBooleanObject(_ obj: Object, _ expected: Bool) -> Bool {
   return true
 }
 
-func testNullObject(_ object: Object) -> Bool {
+func expectNullObject(_ object: Object) -> Bool {
   switch object {
   case .null:
     return true

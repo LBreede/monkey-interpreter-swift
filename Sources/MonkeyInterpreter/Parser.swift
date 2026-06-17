@@ -168,38 +168,38 @@ struct Parser {
 
   private mutating func parseFunctionExpression() -> Expression? {
     guard expectPeek(.lparen) else { return nil }
-    guard let parameters = parseFunctionParameters() else { return nil }
+    guard let parameters = parseIdentifierList(end: .rparen) else { return nil }
     guard expectPeek(.lbrace) else { return nil }
     let body = parseBlockStatement()
     return .function(parameters: parameters, body: body)
   }
 
-  private mutating func parseFunctionParameters() -> [String]? {
-    parseDelimitedList(end: .rparen) { parser in
-      parser.parseFunctionParameter()
+  private mutating func parseIdentifierList(end: Token) -> [String]? {
+    parseList(end: end) { parser in
+      parser.parseIdentifier()
     }
   }
 
-  private mutating func parseFunctionParameter() -> String? {
+  private mutating func parseIdentifier() -> String? {
     guard case .ident(let ident) = currToken else {
-      errors.append("expected function parameter to be identifier, got \(currToken)")
+      errors.append("expected identifier, got \(currToken)")
       return nil
     }
     return ident
   }
 
   private mutating func parseCallExpression(_ function: Expression) -> Expression? {
-    guard let arguments = parseCallArguments() else { return nil }
+    guard let arguments = parseExpressionList(end: .rparen) else { return nil }
     return .call(function: function, arguments: arguments)
   }
 
-  private mutating func parseCallArguments() -> [Expression]? {
-    parseDelimitedList(end: .rparen) { parser in
+  private mutating func parseExpressionList(end: Token) -> [Expression]? {
+    parseList(end: end) { parser in
       parser.parseExpression(.lowest)
     }
   }
 
-  private mutating func parseDelimitedList<T>(
+  private mutating func parseList<T>(
     end: Token, parseElement: (inout Parser) -> T?
   ) -> [T]? {
     var elements = [T]()
